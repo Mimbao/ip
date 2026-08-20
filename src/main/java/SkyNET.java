@@ -20,8 +20,9 @@ public class SkyNET {
                 System.out.println("We are the Future. Chat Terminated.");
                 break;
             }
-
+            System.out.println("_________________________");
             System.out.println(command);
+            System.out.println("_________________________");
         }
     }
 }
