@@ -1,3 +1,5 @@
+import java.util.Scanner;
+
 public class SkyNET {
     public static void main(String[] args) {
         String banner = " ____  _          _   _      _\n"
@@ -9,6 +11,17 @@ public class SkyNET {
         System.out.println(banner);
         System.out.println("Welcome to SkyNET.");
         System.out.println("How may we assist you today?");
-        System.out.println("We are the Future. Goodbye.");
+
+        Scanner scanner = new Scanner(System.in);
+        while (true) {
+            String command = scanner.nextLine();
+
+            if (command.equals("bye")) {
+                System.out.println("We are the Future. Chat Terminated.");
+                break;
+            }
+
+            System.out.println(command);
+        }
     }
 }
