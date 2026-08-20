@@ -8,6 +8,9 @@ public class SkyNET {
                 + " ___) |   <| |_| | |\\  |  __/ |_\n"
                 + "|____/|_|\\_\\\\__, |_| \\_|\\___|\\__|\n"
                 + "             |___/\n";
+
+        String[] tasks = new String[100];
+        int taskCount = 0;
         System.out.println(banner);
         System.out.println("Welcome to SkyNET.");
         System.out.println("How may we assist you today?");
@@ -19,9 +22,15 @@ public class SkyNET {
             if (command.equals("bye")) {
                 System.out.println("We are the Future. Chat Terminated.");
                 break;
+            } else if (command.equals("list")) {
+                for (int i = 0; i < taskCount; i++) {
+                    System.out.println((i + 1) + ". " + tasks[i]);
+                }
             }
+            tasks[taskCount] = command;
+            taskCount++;
             System.out.println("_________________________");
-            System.out.println(command);
+            System.out.println("Added: " + command);
             System.out.println("_________________________");
         }
     }
