@@ -1,4 +1,4 @@
-public class Task {
+public abstract class Task {
     private final String description;
     private boolean isDone;
 
@@ -27,4 +27,6 @@ public class Task {
     public String getDescription() {
         return description;
     }
+
+    public abstract String toString();
 }

@@ -24,10 +24,9 @@ public class SkyNET {
                 break;
 
             } else if (command.equals("list")) {
-                System.out.println("[Task List Display]");
+                System.out.println("[Target List Display]");
                 for (int i = 0; i < taskCount; i++) {
-                    System.out.println((i + 1) + ". [" + tasks[i].getStatusIcon() + "] "
-                            + tasks[i].getDescription());
+                    System.out.println((i + 1) + ". " + tasks[i]);
                 }
 
             } else if (command.startsWith("mark ")) {
@@ -35,23 +34,53 @@ public class SkyNET {
                 int taskIndex = taskNumber - 1;
                 tasks[taskIndex].markAsDone();
 
-                System.out.println("The Task has been Completed:");
-                System.out.println("  [X] " + tasks[taskIndex].getDescription());
+                System.out.println("The Target has been Neutralized:");
+                System.out.println("  " + tasks[taskIndex]);
 
             } else if (command.startsWith("unmark ")) {
                 int taskNumber = Integer.parseInt(command.substring(7));
                 int taskIndex = taskNumber - 1;
                 tasks[taskIndex].markAsNotDone();
 
-                System.out.println("Task Remains Unfulfilled:");
-                System.out.println("  [ ] " + tasks[taskIndex].getDescription());
+                System.out.println("Failed to eliminate Target:");
+                System.out.println("  " + tasks[taskIndex]);
 
-            } else {
-                tasks[taskCount] = new Task(command);
+            } else if (command.startsWith("todo ")) {
+                String description = command.substring(5);
+                tasks[taskCount] = new Todo(description);
+
+                System.out.println("Target in time has been located:");
+                System.out.println("  " + tasks[taskCount]);
+
                 taskCount++;
-                System.out.println("_________________________");
-                System.out.println("Added: " + command);
-                System.out.println("_________________________");
+            } else if (command.startsWith("deadline ")) {
+                int byIndex = command.indexOf(" /by ");
+
+                String description = command.substring(9, byIndex);
+                String by = command.substring(byIndex + 5);
+
+                tasks[taskCount] = new Deadline(description, by);
+
+                System.out.println("Incursion Risk, Eliminate Target:");
+                System.out.println("  " + tasks[taskCount]);
+
+                taskCount++;
+            } else if (command.startsWith("event ")) {
+                int fromIndex = command.indexOf(" /from ");
+                int toIndex = command.indexOf(" /to ");
+
+                String description = command.substring(6, fromIndex);
+                String from = command.substring(fromIndex + 7, toIndex);
+                String to = command.substring(toIndex + 5);
+
+                tasks[taskCount] = new Event(description, from, to);
+
+                System.out.println("Temporal target located:");
+                System.out.println("  " + tasks[taskCount]);
+
+                taskCount++;
+            } else {
+                System.out.println("Unknown command. Try: todo, deadline, event, list, mark, unmark, or bye.");
             }
         }
     }
