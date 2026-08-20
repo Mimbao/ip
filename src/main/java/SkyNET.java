@@ -26,12 +26,13 @@ public class SkyNET {
                 for (int i = 0; i < taskCount; i++) {
                     System.out.println((i + 1) + ". " + tasks[i]);
                 }
+            } else {
+                tasks[taskCount] = command;
+                taskCount++;
+                System.out.println("_________________________");
+                System.out.println("Added: " + command);
+                System.out.println("_________________________");
             }
-            tasks[taskCount] = command;
-            taskCount++;
-            System.out.println("_________________________");
-            System.out.println("Added: " + command);
-            System.out.println("_________________________");
         }
     }
 }
