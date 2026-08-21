@@ -1,26 +1,26 @@
 public abstract class Task {
     private final String description;
-    private boolean isDone;
+    private TaskStatus status;
 
     // Constructor
     public Task(String description) {
         this.description = description;
-        this.isDone = false;
+        this.status = TaskStatus.NOT_DONE;
     }
 
     // Mark method
     public void markAsDone() {
-        isDone = true;
+        status = TaskStatus.DONE;
     }
 
     // Unmark method
     public void markAsNotDone() {
-        isDone = false;
+        status = TaskStatus.NOT_DONE;
     }
 
     // Display Mark method
     public String getStatusIcon() {
-        return isDone ? "X" : " ";
+        return status.getIcon();
     }
 
     // Get Description
