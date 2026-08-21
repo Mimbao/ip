@@ -1,16 +1,19 @@
 import java.util.Scanner;
+import java.util.ArrayList;
+import java.util.List;
 
 public class SkyNET {
     public static void main(String[] args) {
-        String banner = " ____  _          _   _      _\n"
-                + "/ ___|| | ___   _| \\ | | ___| |_\n"
-                + "\\___ \\| |/ / | | |  \\| |/ _ \\ __|\n"
-                + " ___) |   <| |_| | |\\  |  __/ |_\n"
-                + "|____/|_|\\_\\\\__, |_| \\_|\\___|\\__|\n"
-                + "             |___/\n";
+        String banner = """
+                 ____  _          _   _      _
+                / ___|| | ___   _| \\ | | ___| |_
+                \\___ \\| |/ / | | |  \\| |/ _ \\ __|
+                 ___) |   <| |_| | |\\  |  __/ |_
+                |____/|_|\\_\\\\__, |_| \\_|\\___|\\__|
+                             |___/
+                """;
 
-        Task[] tasks = new Task[100];
-        int taskCount = 0;
+        List<Task> tasks = new ArrayList<>();
         System.out.println(banner);
         System.out.println("Welcome to SkyNET.");
         System.out.println("How may we assist you today?");
@@ -24,85 +27,52 @@ public class SkyNET {
                     break;
 
                 } else if (command.equals("list")) {
-                    printTaskList(tasks, taskCount);
+                    printTaskList(tasks);
 
                 } else if (command.equals("mark") || command.startsWith("mark ")) {
-                    int taskIndex = getTaskIndex(command, 4, taskCount);
-                    tasks[taskIndex].markAsDone();
+                    int taskIndex = getTaskIndex(command, 4, tasks.size());
+                    tasks.get(taskIndex).markAsDone();
 
                     System.out.println("The Target has been Neutralized:");
-                    System.out.println("  " + tasks[taskIndex]);
+                    System.out.println("  " + tasks.get(taskIndex));
 
                 } else if (command.equals("unmark") || command.startsWith("unmark ")) {
-                    int taskIndex = getTaskIndex(command, 6, taskCount);
-                    tasks[taskIndex].markAsNotDone();
+                    int taskIndex = getTaskIndex(command, 6, tasks.size());
+                    tasks.get(taskIndex).markAsNotDone();
 
                     System.out.println("Failed to eliminate Target:");
-                    System.out.println("  " + tasks[taskIndex]);
+                    System.out.println("  " + tasks.get(taskIndex));
 
                 } else if (command.equals("todo") || command.startsWith("todo "))  {
-                    String description = command.substring(4).trim();
-
-                    if (description.isEmpty()) {
-                        throw new SkyNETException("Please input a target.");
-                    }
-
-                    ensureTaskListHasSpace(tasks, taskCount);
-                    tasks[taskCount] = new Todo(description);
+                    Task task = createTodo(command);
+                    tasks.add(task);
                     System.out.println("Target in time has been located:");
-                    System.out.println("  " + tasks[taskCount]);
-                    taskCount++;
+                    System.out.println("  " + task);
 
                 } else if (command.equals("deadline") || command.startsWith("deadline ")) {
-                    String details = command.substring(8).trim();
-                    int byIndex = details.indexOf(" /by ");
-
-                    if (byIndex == -1) {
-                        throw new SkyNETException(
-                                "Please use the format: deadline DESCRIPTION /by date");
-                    }
-
-                    String description = details.substring(0, byIndex).trim();
-                    String by = details.substring(byIndex + 5).trim();
-
-                    if (description.isEmpty() || by.isEmpty()) {
-                        throw new SkyNETException(
-                                "A deadline needs both a description and a deadline time.");
-                    }
-
-                    ensureTaskListHasSpace(tasks, taskCount);
-                    tasks[taskCount] = new Deadline(description, by);
+                    Task task = createDeadline(command);
+                    tasks.add(task);
                     System.out.println("Incursion Risk, Eliminate Target:");
-                    System.out.println("  " + tasks[taskCount]);
-                    taskCount++;
+                    System.out.println("  " + task);
 
                 } else if (command.equals("event") || command.startsWith("event ")) {
-                    int fromIndex = command.indexOf(" /from ");
-                    int toIndex = command.indexOf(" /to ");
-
-                    if (fromIndex == -1 || toIndex == -1 || fromIndex > toIndex) {
-                        throw new SkyNETException(
-                                "Please use the format: event DESCRIPTION /from date /to date");
-                    }
-
-                    String description = command.substring(6, fromIndex).trim();
-                    String from = command.substring(fromIndex + 7, toIndex).trim();
-                    String to = command.substring(toIndex + 5).trim();
-
-                    if (description.isEmpty() || from.isEmpty() || to.isEmpty()) {
-                        throw new SkyNETException(
-                                "An event needs a description, start time, and end time.");
-                    }
-
-                    ensureTaskListHasSpace(tasks, taskCount);
-                    tasks[taskCount] = new Event(description, from, to);
+                    Task task = createEvent(command);
+                    tasks.add(task);
                     System.out.println("Temporal target located:");
-                    System.out.println("  " + tasks[taskCount]);
+                    System.out.println("  " + task);
 
-                    taskCount++;
+
+                } else if (command.equals("delete") || command.startsWith("delete ")) {
+                    int taskIndex = getTaskIndex(command, 6, tasks.size());
+                    Task deletedTask = tasks.remove(taskIndex);
+
+                    System.out.println("Target Erased:");
+                    System.out.println("  " + deletedTask);
+                    System.out.println("Remaining targets: " + tasks.size());
 
                 } else {
-                    throw new SkyNETException("Unrecognised Command. Use todo/deadline/event/list/mark/unmark/bye.");
+                    throw new SkyNETException("Unrecognised Command. " +
+                            "Use todo/deadline/event/list/mark/unmark/delete/bye.");
                 }
 
             } catch (SkyNETException e) {
@@ -111,6 +81,59 @@ public class SkyNET {
         }
     }
 
+
+
+    // Handle input management and create the Tasks
+    private static Task createTodo(String command) throws SkyNETException {
+        String description = command.substring(4).trim();
+
+        if (description.isEmpty()) {
+            throw new SkyNETException("Please input a target.");
+        }
+
+        return new Todo(description);
+    }
+
+    private static Task createDeadline(String command) throws SkyNETException {
+        String details = command.substring(8).trim();
+        int byIndex = details.indexOf(" /by ");
+
+        if (byIndex == -1) {
+            throw new SkyNETException(
+                    "Please use the format: deadline DESCRIPTION /by date");
+        }
+
+        String description = details.substring(0, byIndex).trim();
+        String by = details.substring(byIndex + 5).trim();
+
+        if (description.isEmpty() || by.isEmpty()) {
+            throw new SkyNETException(
+                    "A deadline needs both a description and a deadline time.");
+        }
+
+        return new Deadline(description, by);
+    }
+
+    private static Task createEvent(String command) throws SkyNETException {
+        int fromIndex = command.indexOf(" /from ");
+        int toIndex = command.indexOf(" /to ");
+
+        if (fromIndex == -1 || toIndex == -1 || fromIndex > toIndex) {
+            throw new SkyNETException(
+                    "Please use the format: event DESCRIPTION /from date /to date");
+        }
+
+        String description = command.substring(6, fromIndex).trim();
+        String from = command.substring(fromIndex + 7, toIndex).trim();
+        String to = command.substring(toIndex + 5).trim();
+
+        if (description.isEmpty() || from.isEmpty() || to.isEmpty()) {
+            throw new SkyNETException(
+                    "An event needs a description, start time, and end time.");
+        }
+
+        return new Event(description, from, to);
+    }
 
 
 
@@ -132,20 +155,12 @@ public class SkyNET {
         }
     }
 
-    // Method to error handle >100 tasks
-    private static void ensureTaskListHasSpace(Task[] tasks, int taskCount)
-            throws SkyNETException {
-        if (taskCount >= tasks.length) {
-            throw new SkyNETException("Maximum Capacity Reached.");
-        }
-    }
-
-    // Abstracted print list logic
-    private static void printTaskList(Task[] tasks, int taskCount) {
+    // Handle print list logic
+    private static void printTaskList(List<Task> tasks) {
         System.out.println("[Target List Display]");
 
-        for (int i = 0; i < taskCount; i++) {
-            System.out.println((i + 1) + ". " + tasks[i]);
+        for (int i = 0; i < tasks.size(); i++) {
+            System.out.println((i + 1) + ". " + tasks.get(i));
         }
     }
 }
@@ -158,4 +173,4 @@ public class SkyNET {
 // 5. Empty event format
 // 6. Wrong deadline format
 // 7. Empty deadline format
-// 8. Prevent exceeding 100 targets
+// 8. Prevent exceeding 100 targets >>> Removed in favor of scalable ArrayList
