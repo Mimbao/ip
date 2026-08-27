@@ -2,6 +2,9 @@ import java.util.Scanner;
 import java.util.ArrayList;
 import java.util.List;
 import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 
 public class SkyNET {
     public static void main(String[] args) {
@@ -51,7 +54,7 @@ public class SkyNET {
                     int taskIndex = getTaskIndex(command, 6, tasks.size());
                     tasks.get(taskIndex).markAsNotDone();
                     storage.save(tasks);
-                    System.out.println("Failed to eliminate Target:");
+                    System.out.println("Failed to Complete:");
                     System.out.println("  " + tasks.get(taskIndex));
 
                 } else if (command.equals("todo") || command.startsWith("todo "))  {
@@ -65,7 +68,7 @@ public class SkyNET {
                     Task task = createDeadline(command);
                     tasks.add(task);
                     storage.save(tasks);
-                    System.out.println("Incursion Risk, Eliminate Target:");
+                    System.out.println("Incursion Risk, Finish Deadline:");
                     System.out.println("  " + task);
 
                 } else if (command.equals("event") || command.startsWith("event ")) {
@@ -114,18 +117,29 @@ public class SkyNET {
 
         if (byIndex == -1) {
             throw new SkyNETException(
-                    "Please use the format: deadline DESCRIPTION /by date");
+                    "Please use the format: deadline DESCRIPTION /by yyyy-MM-dd HH:mm");
         }
 
         String description = details.substring(0, byIndex).trim();
-        String by = details.substring(byIndex + 5).trim();
+        String byText = details.substring(byIndex + 5).trim();
 
-        if (description.isEmpty() || by.isEmpty()) {
+        if (description.isEmpty() || byText.isEmpty()) {
             throw new SkyNETException(
                     "A deadline needs both a description and a deadline time.");
         }
 
-        return new Deadline(description, by);
+        // once obtained by-text, convert to local date time
+        try {
+            LocalDateTime by = LocalDateTime.parse(
+                    byText,
+                    DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
+            return new Deadline(description, by);
+
+        } catch (DateTimeParseException e) {
+            throw new SkyNETException(
+                    "Invalid date. Please use yyyy-MM-dd HH:mm.");
+
+        }
     }
 
     private static Task createEvent(String command) throws SkyNETException {
@@ -134,19 +148,31 @@ public class SkyNET {
 
         if (fromIndex == -1 || toIndex == -1 || fromIndex > toIndex) {
             throw new SkyNETException(
-                    "Please use the format: event DESCRIPTION /from date /to date");
+                    "Please use the format: event DESCRIPTION /from yyyy-MM-dd HH:mm /to yyyy-MM-dd HH:mm");
         }
 
         String description = command.substring(6, fromIndex).trim();
-        String from = command.substring(fromIndex + 7, toIndex).trim();
-        String to = command.substring(toIndex + 5).trim();
+        String fromText = command.substring(fromIndex + 7, toIndex).trim();
+        String toText = command.substring(toIndex + 5).trim();
 
-        if (description.isEmpty() || from.isEmpty() || to.isEmpty()) {
+        if (description.isEmpty() || fromText.isEmpty() || toText.isEmpty()) {
             throw new SkyNETException(
                     "An event needs a description, start time, and end time.");
         }
 
-        return new Event(description, from, to);
+        DateTimeFormatter inputFormatter =
+                DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+
+        try {
+            LocalDateTime from = LocalDateTime.parse(fromText, inputFormatter);
+            LocalDateTime to = LocalDateTime.parse(toText, inputFormatter);
+            return new Event(description, from, to);
+
+        } catch (DateTimeParseException e) {
+            throw new SkyNETException(
+                    "Invalid date. Please use yyyy-MM-dd HH:mm.");
+
+        }
     }
 
 
@@ -187,3 +213,4 @@ public class SkyNET {
 // 6. Wrong deadline format
 // 7. Empty deadline format
 // 8. Prevent exceeding 100 targets >>> Removed in favor of scalable ArrayList
+// 9. Incorrect date format
