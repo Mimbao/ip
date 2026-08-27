@@ -3,9 +3,9 @@ package skynet;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.List;
-import java.util.ArrayList;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Storage {
 
@@ -55,12 +55,12 @@ public class Storage {
             Task task = switch (parts[0]) {
                 case "T" -> new Todo(parts[2]);
                 case "D" -> new Deadline(
-                                    parts[2],
-                                    LocalDateTime.parse(parts[3]));
+                        parts[2],
+                        LocalDateTime.parse(parts[3]));
                 case "E" -> new Event(
-                                    parts[2],
-                                    LocalDateTime.parse(parts[3]),
-                                    LocalDateTime.parse(parts[4]));
+                        parts[2],
+                        LocalDateTime.parse(parts[3]),
+                        LocalDateTime.parse(parts[4]));
                 default -> throw new IllegalArgumentException("Unknown task type");
             };
 

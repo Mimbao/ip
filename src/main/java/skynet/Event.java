@@ -30,5 +30,4 @@ public class Event extends Task {
                 + " (from: " + from.format(formatter)
                 + " to: " + to.format(formatter) + ")";
     }
-
 }
