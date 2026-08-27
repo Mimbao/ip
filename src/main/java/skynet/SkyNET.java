@@ -43,7 +43,7 @@ public class SkyNET {
                             "Failed to Complete:",
                             tasks.get(taskIndex));
 
-                } else if (command.equals("todo") || command.startsWith("todo "))  {
+                } else if (command.equals("todo") || command.startsWith("todo ")) {
                     Task task = Parser.parseTodo(command);
                     tasks.add(task);
                     storage.save(tasks.getTasks());
@@ -56,7 +56,7 @@ public class SkyNET {
                     tasks.add(task);
                     storage.save(tasks.getTasks());
                     ui.showTask(
-                            "Incursion Risk, Finish skynet.Deadline:",
+                            "Incursion Risk, Finish Deadline:",
                             task);
 
                 } else if (command.equals("event") || command.startsWith("event ")) {
@@ -67,7 +67,6 @@ public class SkyNET {
                             "Temporal target located:",
                             task);
 
-
                 } else if (command.equals("delete") || command.startsWith("delete ")) {
                     int taskIndex = Parser.getTaskIndex(command, 6, tasks.size());
                     Task deletedTask = tasks.delete(taskIndex);
@@ -75,8 +74,9 @@ public class SkyNET {
                     ui.showDeletedTask(deletedTask, tasks.size());
 
                 } else {
-                    throw new SkyNETException("Unrecognised Command. " +
-                            "Use todo/deadline/event/list/mark/unmark/delete/bye.");
+                    throw new SkyNETException(
+                            "Unrecognised Command. "
+                                    + "Use todo/deadline/event/list/mark/unmark/delete/bye.");
                 }
 
             } catch (SkyNETException | IOException e) {
@@ -85,14 +85,3 @@ public class SkyNET {
         }
     }
 }
-
-// All Errors Handled:
-// 1. Using string for mark/unmark
-// 2. Using invalid number for mark/unmark
-// 3. Empty to do format
-// 4. Wrong event format
-// 5. Empty event format
-// 6. Wrong deadline format
-// 7. Empty deadline format
-// 8. Prevent exceeding 100 targets >>> Removed in favor of scalable ArrayList
-// 9. Incorrect date format
