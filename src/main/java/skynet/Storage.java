@@ -7,10 +7,15 @@ import java.util.List;
 import java.util.ArrayList;
 import java.time.LocalDateTime;
 
+/**
+ * Handles saving and loading of a TaskList.
+ */
 public class Storage {
 
     /**
      * Saves and loads the chatbot's tasks from a file on disk.
+     *
+     * @param tasks the list of tasks
      */
     void save(List<Task> tasks) throws IOException {
         List<String> lines = new ArrayList<>();

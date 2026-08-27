@@ -4,10 +4,20 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 
+/**
+ * Parses user commands into tasks and task indices.
+ */
 public class Parser {
     private static final DateTimeFormatter INPUT_FORMATTER =
             DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 
+    /**
+     * Parses a to-do command and creates a Todo task.
+     *
+     * @param command the user command containing the to-do description
+     * @return the created Todo task
+     * @throws SkyNETException if the command has an empty description
+     */
     public static Task parseTodo(String command) throws SkyNETException {
         String description = command.substring(4).trim();
         if (description.isEmpty()) {
@@ -16,6 +26,13 @@ public class Parser {
         return new Todo(description);
     }
 
+    /**
+     * Parses a deadline command and creates a Deadline task.
+     *
+     * @param command the user command containing the description and deadline
+     * @return the created Deadline task
+     * @throws SkyNETException if the command format or deadline date is invalid
+     */
     public static Task parseDeadline(String command) throws SkyNETException {
         String details = command.substring(8).trim();
         int byIndex = details.indexOf(" /by ");
@@ -42,6 +59,13 @@ public class Parser {
         }
     }
 
+    /**
+     * Parses an event command and creates an Event task.
+     *
+     * @param command the user command containing the description, start time, and end time
+     * @return the created Event task
+     * @throws SkyNETException if the command format or event dates are invalid
+     */
     public static Task parseEvent(String command) throws SkyNETException {
         int fromIndex = command.indexOf(" /from ");
         int toIndex = command.indexOf(" /to ");
@@ -75,6 +99,15 @@ public class Parser {
         }
     }
 
+    /**
+     * Converts a task number from a user command into a zero-based task index.
+     *
+     * @param command the user command containing the task number
+     * @param commandLength the length of the command keyword
+     * @param taskCount the number of tasks currently in the task list
+     * @return the zero-based index of the selected task
+     * @throws SkyNETException if the task number is invalid or outside the valid range
+     */
     public static int getTaskIndex(
             String command, int commandLength, int taskCount)
             throws SkyNETException {
