@@ -1,6 +1,7 @@
 package skynet;
 
 import java.io.IOException;
+import java.util.List;
 
 public class SkyNET {
     public static void main(String[] args) {
@@ -26,6 +27,11 @@ public class SkyNET {
 
                 } else if (command.equals("list")) {
                     ui.showTaskList(tasks.getTasks());
+
+                } else if (command.equals("find") || command.startsWith("find ")) {
+                    String keyword = Parser.parseFind(command);
+                    List<Task> matches = tasks.find(keyword);
+                    ui.showMatchingTasks(matches);
 
                 } else if (command.equals("mark") || command.startsWith("mark ")) {
                     int taskIndex = Parser.getTaskIndex(command, 4, tasks.size());
@@ -76,7 +82,7 @@ public class SkyNET {
 
                 } else {
                     throw new SkyNETException("Unrecognised Command. " +
-                            "Use todo/deadline/event/list/mark/unmark/delete/bye.");
+                            "Use todo/deadline/event/list/mark/unmark/delete/find/bye.");
                 }
 
             } catch (SkyNETException | IOException e) {

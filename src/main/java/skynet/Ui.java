@@ -55,4 +55,17 @@ public class Ui {
         System.out.println("  " + task);
         System.out.println("Remaining targets: " + remainingTasks);
     }
+
+    public void showMatchingTasks(List<Task> matches) {
+        if (matches.isEmpty()) {
+            System.out.println("No matching tasks found.");
+            return;
+        }
+
+        System.out.println("Here are the matching tasks in your list:");
+
+        for (int i = 0; i < matches.size(); i++) {
+            System.out.println((i + 1) + ". " + matches.get(i));
+        }
+    }
 }

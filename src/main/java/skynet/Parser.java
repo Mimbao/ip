@@ -75,6 +75,16 @@ public class Parser {
         }
     }
 
+    public static String parseFind(String command) throws SkyNETException {
+        String keyword = command.substring(4).trim();
+
+        if (keyword.isEmpty()) {
+            throw new SkyNETException("Please provide a keyword to find.");
+        }
+
+        return keyword;
+    }
+
     public static int getTaskIndex(
             String command, int commandLength, int taskCount)
             throws SkyNETException {
