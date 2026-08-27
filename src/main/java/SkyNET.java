@@ -14,8 +14,17 @@ public class SkyNET {
                              |___/
                 """;
 
-        List<Task> tasks = new ArrayList<>();
         Storage storage = new Storage();
+
+        // RELOAD TARGETS (IF ANY)
+        List<Task> tasks;
+        try {
+            tasks = storage.load();
+        } catch (IOException e) {
+            System.out.println("ERROR: Unable to load saved tasks.");
+            tasks = new ArrayList<>();
+        }
+
         System.out.println(banner);
         System.out.println("Welcome to SkyNET.");
         System.out.println("How may we assist you today?");
@@ -139,7 +148,6 @@ public class SkyNET {
 
         return new Event(description, from, to);
     }
-
 
 
     // Method to error handle invalid mark and unmark inputs/only accept numbers in range
