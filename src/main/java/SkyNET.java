@@ -1,7 +1,4 @@
 import java.io.IOException;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
 
 public class SkyNET {
     public static void main(String[] args) {
@@ -29,7 +26,7 @@ public class SkyNET {
                     ui.showTaskList(tasks.getTasks());
 
                 } else if (command.equals("mark") || command.startsWith("mark ")) {
-                    int taskIndex = getTaskIndex(command, 4, tasks.size());
+                    int taskIndex = Parser.getTaskIndex(command, 4, tasks.size());
                     tasks.get(taskIndex).markAsDone();
                     storage.save(tasks.getTasks());
                     ui.showTask(
@@ -37,7 +34,7 @@ public class SkyNET {
                             tasks.get(taskIndex));
 
                 } else if (command.equals("unmark") || command.startsWith("unmark ")) {
-                    int taskIndex = getTaskIndex(command, 6, tasks.size());
+                    int taskIndex = Parser.getTaskIndex(command, 6, tasks.size());
                     tasks.get(taskIndex).markAsNotDone();
                     storage.save(tasks.getTasks());
                     ui.showTask(
@@ -45,7 +42,7 @@ public class SkyNET {
                             tasks.get(taskIndex));
 
                 } else if (command.equals("todo") || command.startsWith("todo "))  {
-                    Task task = createTodo(command);
+                    Task task = Parser.parseTodo(command);
                     tasks.add(task);
                     storage.save(tasks.getTasks());
                     ui.showTask(
@@ -53,7 +50,7 @@ public class SkyNET {
                             task);
 
                 } else if (command.equals("deadline") || command.startsWith("deadline ")) {
-                    Task task = createDeadline(command);
+                    Task task = Parser.parseDeadline(command);
                     tasks.add(task);
                     storage.save(tasks.getTasks());
                     ui.showTask(
@@ -61,7 +58,7 @@ public class SkyNET {
                             task);
 
                 } else if (command.equals("event") || command.startsWith("event ")) {
-                    Task task = createEvent(command);
+                    Task task = Parser.parseEvent(command);
                     tasks.add(task);
                     storage.save(tasks.getTasks());
                     ui.showTask(
@@ -70,7 +67,7 @@ public class SkyNET {
 
 
                 } else if (command.equals("delete") || command.startsWith("delete ")) {
-                    int taskIndex = getTaskIndex(command, 6, tasks.size());
+                    int taskIndex = Parser.getTaskIndex(command, 6, tasks.size());
                     Task deletedTask = tasks.delete(taskIndex);
                     storage.save(tasks.getTasks());
                     ui.showDeletedTask(deletedTask, tasks.size());
@@ -83,101 +80,6 @@ public class SkyNET {
             } catch (SkyNETException | IOException e) {
                 ui.showError(e.getMessage());
             }
-        }
-    }
-
-
-
-    private static Task createTodo(String command) throws SkyNETException {
-        String description = command.substring(4).trim();
-
-        if (description.isEmpty()) {
-            throw new SkyNETException("Please input a target.");
-        }
-
-        return new Todo(description);
-    }
-
-    private static Task createDeadline(String command) throws SkyNETException {
-        String details = command.substring(8).trim();
-        int byIndex = details.indexOf(" /by ");
-
-        if (byIndex == -1) {
-            throw new SkyNETException(
-                    "Please use the format: deadline DESCRIPTION /by yyyy-MM-dd HH:mm");
-        }
-
-        String description = details.substring(0, byIndex).trim();
-        String byText = details.substring(byIndex + 5).trim();
-
-        if (description.isEmpty() || byText.isEmpty()) {
-            throw new SkyNETException(
-                    "A deadline needs both a description and a deadline time.");
-        }
-
-        // once obtained by-text, convert to local date time
-        try {
-            LocalDateTime by = LocalDateTime.parse(
-                    byText,
-                    DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
-            return new Deadline(description, by);
-
-        } catch (DateTimeParseException e) {
-            throw new SkyNETException(
-                    "Invalid date. Please use yyyy-MM-dd HH:mm.");
-
-        }
-    }
-
-    private static Task createEvent(String command) throws SkyNETException {
-        int fromIndex = command.indexOf(" /from ");
-        int toIndex = command.indexOf(" /to ");
-
-        if (fromIndex == -1 || toIndex == -1 || fromIndex > toIndex) {
-            throw new SkyNETException(
-                    "Please use the format: event DESCRIPTION /from yyyy-MM-dd HH:mm /to yyyy-MM-dd HH:mm");
-        }
-
-        String description = command.substring(6, fromIndex).trim();
-        String fromText = command.substring(fromIndex + 7, toIndex).trim();
-        String toText = command.substring(toIndex + 5).trim();
-
-        if (description.isEmpty() || fromText.isEmpty() || toText.isEmpty()) {
-            throw new SkyNETException(
-                    "An event needs a description, start time, and end time.");
-        }
-
-        DateTimeFormatter inputFormatter =
-                DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
-
-        try {
-            LocalDateTime from = LocalDateTime.parse(fromText, inputFormatter);
-            LocalDateTime to = LocalDateTime.parse(toText, inputFormatter);
-            return new Event(description, from, to);
-
-        } catch (DateTimeParseException e) {
-            throw new SkyNETException(
-                    "Invalid date. Please use yyyy-MM-dd HH:mm.");
-
-        }
-    }
-
-
-    // Method to error handle invalid mark and unmark inputs/only accept numbers in range
-    private static int getTaskIndex(String command, int commandLength, int taskCount)
-            throws SkyNETException {
-        String numberText = command.substring(commandLength).trim();
-
-        try {
-            int taskNumber = Integer.parseInt(numberText);
-
-            if (taskNumber < 1 || taskNumber > taskCount) {
-                throw new SkyNETException("Target Number does not exist.");
-            }
-
-            return taskNumber - 1;
-        } catch (NumberFormatException e) {
-            throw new SkyNETException("Please input a Target Number.");
         }
     }
 }
