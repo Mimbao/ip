@@ -1,6 +1,7 @@
 package skynet;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
+import java.util.List;
 
 // write add_task_increasesize by hand to get used to writing tests
 // follow structure of @Tests -> Arrange -> Act -> Assert
@@ -41,5 +42,17 @@ public class TaskListTest {
         Task result = tasks.get(0);
         // Assert
         assertEquals(task, result);
+    }
+
+    @Test
+    void find_matchingKeyword_returnsMatchingTask() {
+        TaskList tasks = new TaskList();
+        tasks.add(new Todo("read book"));
+        tasks.add(new Todo("go shopping"));
+
+        List<Task> matches = tasks.find("book");
+
+        assertEquals(1, matches.size());
+        assertEquals("read book", matches.get(0).getDescription());
     }
 }

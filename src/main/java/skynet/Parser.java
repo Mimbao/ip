@@ -100,6 +100,23 @@ public class Parser {
     }
 
     /**
+     * Extracts the keyword if Find command was given.
+     *
+     * @param command the command given containing the keyword
+     * @return the keyword string
+     * @throws SkyNETException if the keyword is empty
+     */
+    public static String parseFind(String command) throws SkyNETException {
+        String keyword = command.substring(4).trim();
+
+        if (keyword.isEmpty()) {
+            throw new SkyNETException("Please provide a keyword to find.");
+        }
+
+        return keyword;
+    }
+
+    /**
      * Converts a task number from a user command into a zero-based task index.
      *
      * @param command the user command containing the task number
