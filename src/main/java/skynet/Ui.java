@@ -1,3 +1,5 @@
+package skynet;
+
 import java.util.List;
 import java.util.Scanner;
 
@@ -19,7 +21,7 @@ public class Ui {
                 """;
 
         System.out.println(banner);
-        System.out.println("Welcome to SkyNET.");
+        System.out.println("Welcome to skynet.SkyNET.");
         System.out.println("How may we assist you today?");
     }
 

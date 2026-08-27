@@ -1,3 +1,5 @@
+package skynet;
+
 public abstract class Task {
     private final String description;
     private TaskStatus status;

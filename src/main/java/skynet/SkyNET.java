@@ -1,3 +1,5 @@
+package skynet;
+
 import java.io.IOException;
 
 public class SkyNET {
@@ -54,7 +56,7 @@ public class SkyNET {
                     tasks.add(task);
                     storage.save(tasks.getTasks());
                     ui.showTask(
-                            "Incursion Risk, Finish Deadline:",
+                            "Incursion Risk, Finish skynet.Deadline:",
                             task);
 
                 } else if (command.equals("event") || command.startsWith("event ")) {

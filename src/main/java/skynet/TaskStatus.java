@@ -1,3 +1,5 @@
+package skynet;
+
 public enum TaskStatus {
     NOT_DONE(" "),
     DONE("X");
