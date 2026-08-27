@@ -28,5 +28,10 @@ public abstract class Task {
         return description;
     }
 
+    // Get status
+    public boolean isDone() {
+        return status == TaskStatus.DONE;
+    }
+
     public abstract String toString();
 }

@@ -1,6 +1,7 @@
 import java.util.Scanner;
 import java.util.ArrayList;
 import java.util.List;
+import java.io.IOException;
 
 public class SkyNET {
     public static void main(String[] args) {
@@ -14,6 +15,7 @@ public class SkyNET {
                 """;
 
         List<Task> tasks = new ArrayList<>();
+        Storage storage = new Storage();
         System.out.println(banner);
         System.out.println("Welcome to SkyNET.");
         System.out.println("How may we assist you today?");
@@ -32,32 +34,35 @@ public class SkyNET {
                 } else if (command.equals("mark") || command.startsWith("mark ")) {
                     int taskIndex = getTaskIndex(command, 4, tasks.size());
                     tasks.get(taskIndex).markAsDone();
-
+                    storage.save(tasks);
                     System.out.println("The Target has been Neutralized:");
                     System.out.println("  " + tasks.get(taskIndex));
 
                 } else if (command.equals("unmark") || command.startsWith("unmark ")) {
                     int taskIndex = getTaskIndex(command, 6, tasks.size());
                     tasks.get(taskIndex).markAsNotDone();
-
+                    storage.save(tasks);
                     System.out.println("Failed to eliminate Target:");
                     System.out.println("  " + tasks.get(taskIndex));
 
                 } else if (command.equals("todo") || command.startsWith("todo "))  {
                     Task task = createTodo(command);
                     tasks.add(task);
+                    storage.save(tasks);
                     System.out.println("Target in time has been located:");
                     System.out.println("  " + task);
 
                 } else if (command.equals("deadline") || command.startsWith("deadline ")) {
                     Task task = createDeadline(command);
                     tasks.add(task);
+                    storage.save(tasks);
                     System.out.println("Incursion Risk, Eliminate Target:");
                     System.out.println("  " + task);
 
                 } else if (command.equals("event") || command.startsWith("event ")) {
                     Task task = createEvent(command);
                     tasks.add(task);
+                    storage.save(tasks);
                     System.out.println("Temporal target located:");
                     System.out.println("  " + task);
 
@@ -65,7 +70,7 @@ public class SkyNET {
                 } else if (command.equals("delete") || command.startsWith("delete ")) {
                     int taskIndex = getTaskIndex(command, 6, tasks.size());
                     Task deletedTask = tasks.remove(taskIndex);
-
+                    storage.save(tasks);
                     System.out.println("Target Erased:");
                     System.out.println("  " + deletedTask);
                     System.out.println("Remaining targets: " + tasks.size());
@@ -75,7 +80,7 @@ public class SkyNET {
                             "Use todo/deadline/event/list/mark/unmark/delete/bye.");
                 }
 
-            } catch (SkyNETException e) {
+            } catch (SkyNETException | IOException e) {
                 System.out.println("ERROR: " + e.getMessage());
             }
         }
