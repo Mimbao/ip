@@ -1,5 +1,3 @@
-import java.util.ArrayList;
-import java.util.List;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -10,13 +8,12 @@ public class SkyNET {
         Ui ui = new Ui();
         Storage storage = new Storage();
 
-        // RELOAD TASKS (IF ANY)
-        List<Task> tasks;
+        TaskList tasks;
         try {
-            tasks = storage.load();
+            tasks = new TaskList(storage.load());
         } catch (IOException e) {
             ui.showError("Unable to load saved tasks.");
-            tasks = new ArrayList<>();
+            tasks = new TaskList();
         }
 
         ui.showWelcome();
@@ -29,12 +26,12 @@ public class SkyNET {
                     break;
 
                 } else if (command.equals("list")) {
-                    ui.showTaskList(tasks);
+                    ui.showTaskList(tasks.getTasks());
 
                 } else if (command.equals("mark") || command.startsWith("mark ")) {
                     int taskIndex = getTaskIndex(command, 4, tasks.size());
                     tasks.get(taskIndex).markAsDone();
-                    storage.save(tasks);
+                    storage.save(tasks.getTasks());
                     ui.showTask(
                             "The Target has been Neutralized:",
                             tasks.get(taskIndex));
@@ -42,7 +39,7 @@ public class SkyNET {
                 } else if (command.equals("unmark") || command.startsWith("unmark ")) {
                     int taskIndex = getTaskIndex(command, 6, tasks.size());
                     tasks.get(taskIndex).markAsNotDone();
-                    storage.save(tasks);
+                    storage.save(tasks.getTasks());
                     ui.showTask(
                             "Failed to Complete:",
                             tasks.get(taskIndex));
@@ -50,7 +47,7 @@ public class SkyNET {
                 } else if (command.equals("todo") || command.startsWith("todo "))  {
                     Task task = createTodo(command);
                     tasks.add(task);
-                    storage.save(tasks);
+                    storage.save(tasks.getTasks());
                     ui.showTask(
                             "Target in time has been located:",
                             task);
@@ -58,7 +55,7 @@ public class SkyNET {
                 } else if (command.equals("deadline") || command.startsWith("deadline ")) {
                     Task task = createDeadline(command);
                     tasks.add(task);
-                    storage.save(tasks);
+                    storage.save(tasks.getTasks());
                     ui.showTask(
                             "Incursion Risk, Finish Deadline:",
                             task);
@@ -66,7 +63,7 @@ public class SkyNET {
                 } else if (command.equals("event") || command.startsWith("event ")) {
                     Task task = createEvent(command);
                     tasks.add(task);
-                    storage.save(tasks);
+                    storage.save(tasks.getTasks());
                     ui.showTask(
                             "Temporal target located:",
                             task);
@@ -74,8 +71,8 @@ public class SkyNET {
 
                 } else if (command.equals("delete") || command.startsWith("delete ")) {
                     int taskIndex = getTaskIndex(command, 6, tasks.size());
-                    Task deletedTask = tasks.remove(taskIndex);
-                    storage.save(tasks);
+                    Task deletedTask = tasks.delete(taskIndex);
+                    storage.save(tasks.getTasks());
                     ui.showDeletedTask(deletedTask, tasks.size());
 
                 } else {
