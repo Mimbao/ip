@@ -1,3 +1,4 @@
 T | 0 | John Connor
 E | 1 | eliminate T800 | 1989-03-12T00:00 | 1990-03-12T00:00
 D | 0 | release new prototype T1000 | 2099-12-12T00:00
+T | 0 | Sarah Connor
