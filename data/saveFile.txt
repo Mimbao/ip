@@ -1,0 +1,4 @@
+T | 1 | find John Connor
+E | 0 | T800 anomaly | 1986 | 1990
+D | 1 | send in T1000 | today
+T | 0 | find Sarah Connor
