@@ -1,7 +1,10 @@
 package skynet;
-import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assertions.*;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import java.util.List;
+
+import org.junit.jupiter.api.Test;
 
 // write add_task_increasesize by hand to get used to writing tests
 // follow structure of @Tests -> Arrange -> Act -> Assert

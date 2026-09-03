@@ -72,6 +72,11 @@ public class TaskList {
         return tasks;
     }
 
+    /**
+     * Finds the list of tasks matching the keyword.
+     *
+     * @return The List of Tasks
+     */
     public List<Task> find(String keyword) {
         List<Task> matches = new ArrayList<>();
 
