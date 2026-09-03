@@ -3,7 +3,10 @@ package skynet;
 import java.io.IOException;
 import java.util.List;
 
-public class SkyNET {
+/**
+ * Main class for the Skynet application.
+ */
+public class Skynet {
     public static void main(String[] args) {
         Ui ui = new Ui();
         Storage storage = new Storage();
@@ -80,11 +83,12 @@ public class SkyNET {
                     ui.showDeletedTask(deletedTask, tasks.size());
 
                 } else {
-                    throw new SkyNETException("Unrecognised Command. " +
-                            "Use todo/deadline/event/list/mark/unmark/delete/find/bye.");
+                    throw new SkynetException("Unrecognised Command. "
+                            + "Use todo/deadline/event/list/mark/unmark/delete/find/bye.");
+
                 }
 
-            } catch (SkyNETException | IOException e) {
+            } catch (SkynetException | IOException e) {
                 ui.showError(e.getMessage());
             }
         }
