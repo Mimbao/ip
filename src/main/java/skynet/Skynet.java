@@ -166,7 +166,7 @@ public class Skynet {
      *
      * @param args command-line arguments
      */
-    static void main(String[] args) {
+    static void main(String... args) {
         Skynet skynet = new Skynet();
         Ui ui = new Ui();
 
