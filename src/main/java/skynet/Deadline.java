@@ -32,6 +32,20 @@ public class Deadline extends Task {
     }
 
     /**
+     * Gets the copy of the task.
+     *
+     * @return the copied task
+     */
+    @Override
+    public Task copy() {
+        Deadline copy = new Deadline(getDescription(), getBy());
+        if (isDone()) {
+            copy.markAsDone();
+        }
+        return copy;
+    }
+
+    /**
      * Returns a string representation of the deadline.
      *
      * @return the deadline represented as a string

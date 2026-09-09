@@ -15,6 +15,20 @@ public class Todo extends Task {
     }
 
     /**
+     * Gets the copy of the task.
+     *
+     * @return the copied task
+     */
+    @Override
+    public Task copy() {
+        Todo copy = new Todo(getDescription());
+        if (isDone()) {
+            copy.markAsDone();
+        }
+        return copy;
+    }
+
+    /**
      * Returns a string representation of the to-do.
      *
      * @return the to-do represented as a string

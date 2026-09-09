@@ -44,6 +44,20 @@ public class Event extends Task {
     }
 
     /**
+     * Gets the copy of the task.
+     *
+     * @return the copied task
+     */
+    @Override
+    public Task copy() {
+        Event copy = new Event(getDescription(), getFrom(), getTo());
+        if (isDone()) {
+            copy.markAsDone();
+        }
+        return copy;
+    }
+
+    /**
      * Returns a string representation of the event.
      *
      * @return the event represented as a string
