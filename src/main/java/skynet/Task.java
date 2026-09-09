@@ -13,6 +13,7 @@ public abstract class Task {
      * @param description the description of the task
      */
     public Task(String description) {
+        assert description != null : "Task description cannot be null";
         this.description = description;
         this.status = TaskStatus.NOT_DONE;
     }
@@ -22,6 +23,7 @@ public abstract class Task {
      */
     public void markAsDone() {
         status = TaskStatus.DONE;
+        assert isDone() : "Task state must be DONE after markAsDone()";
     }
 
     /**
@@ -29,6 +31,7 @@ public abstract class Task {
      */
     public void markAsNotDone() {
         status = TaskStatus.NOT_DONE;
+        assert !isDone() : "Task state must be NOT_DONE after markAsNotDone()";
     }
 
     /**

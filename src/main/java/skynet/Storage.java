@@ -18,8 +18,10 @@ public class Storage {
      * @param tasks the list of tasks
      */
     void save(List<Task> tasks) throws IOException {
+        assert tasks != null : "TaskList passed to save() must not be null";
         List<String> lines = new ArrayList<>();
         for (Task task : tasks) {
+            assert task != null : "Task list should not contain null entries";
             String status = task.isDone() ? "1" : "0";
 
             switch (task) {

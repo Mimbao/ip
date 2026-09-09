@@ -11,7 +11,6 @@ public class Todo extends Task {
      * @param description the description of the to-do
      */
     public Todo(String description) {
-        assert description != null : "Todo description must not be null";
         super(description);
     }
 
