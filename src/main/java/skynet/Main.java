@@ -49,4 +49,8 @@ public class Main extends Application {
         backgroundMusic.setVolume(0.2);
         backgroundMusic.play();
     }
+
+    public static void main(String... args) {
+        Application.launch(Main.class, args);
+    }
 }

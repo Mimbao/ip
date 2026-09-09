@@ -52,7 +52,7 @@ test {
 }
 
 application {
-    mainClass = 'skynet.Main'
+    mainClass = 'skynet.Launcher'
 }
 
 jar {
