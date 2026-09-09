@@ -11,34 +11,43 @@ import java.util.List;
  * Handles saving and loading of a TaskList.
  */
 public class Storage {
+    private static final Path SAVE_FILE_PATH = Path.of("data", "saveFile.txt");
+    private static final String DELIMITER = " | ";
+    private static final String DELIMITER_REGEX = " \\| ";
 
     /**
-     * Saves and loads the chatbot's tasks from a file on disk.
+     * Saves the chatbot's tasks to a file on disk.
      *
      * @param tasks the list of tasks
+     * @throws IOException if the save file cannot be written
      */
     void save(List<Task> tasks) throws IOException {
         assert tasks != null : "TaskList passed to save() must not be null";
+<<<<<<< HEAD
+
+=======
+>>>>>>> master
         List<String> lines = new ArrayList<>();
         for (Task task : tasks) {
             assert task != null : "Task list should not contain null entries";
             String status = task.isDone() ? "1" : "0";
 
             switch (task) {
-                case Todo todo -> lines.add("T | " + status + " | "
+                case Todo todo -> lines.add("T" + DELIMITER + status + DELIMITER
                         + todo.getDescription());
-                case Deadline deadline -> lines.add("D | " + status + " | "
-                        + deadline.getDescription() + " | " + deadline.getBy());
-                case Event event -> lines.add("E | " + status + " | "
-                        + event.getDescription() + " | " + event.getFrom()
-                        + " | " + event.getTo());
+                case Deadline deadline -> lines.add("D" + DELIMITER + status + DELIMITER
+                        + deadline.getDescription() + DELIMITER + deadline.getBy());
+                case Event event -> lines.add("E" + DELIMITER + status + DELIMITER
+                        + event.getDescription() + DELIMITER + event.getFrom()
+                        + DELIMITER + event.getTo());
                 default -> throw new IllegalArgumentException("Unknown target type");
             }
-
         }
-        Path saveFile = Path.of("data", "saveFile.txt");
-        Files.createDirectories(saveFile.getParent());
-        Files.write(saveFile, lines);
+
+        if (SAVE_FILE_PATH.getParent() != null) {
+            Files.createDirectories(SAVE_FILE_PATH.getParent());
+        }
+        Files.write(SAVE_FILE_PATH, lines);
     }
 
     /**
@@ -48,26 +57,34 @@ public class Storage {
      * @throws IOException if the save file cannot be read
      */
     List<Task> load() throws IOException {
-        Path saveFile = Path.of("data", "saveFile.txt");
         List<Task> tasks = new ArrayList<>();
 
-        if (Files.notExists(saveFile)) {
+        if (Files.notExists(SAVE_FILE_PATH)) {
             return tasks;
         }
 
-        List<String> lines = Files.readAllLines(saveFile);
+        List<String> lines = Files.readAllLines(SAVE_FILE_PATH);
         for (String line : lines) {
-            String[] parts = line.split(" \\| ");
+            assert line != null : "Save file line read should not be null";
+
+            String[] parts = line.split(DELIMITER_REGEX);
+            assert parts.length >= 3 : "Formatted save line must have at least 3 pipe-separated fields";
 
             Task task = switch (parts[0]) {
                 case "T" -> new Todo(parts[2]);
-                case "D" -> new Deadline(
-                        parts[2],
-                        LocalDateTime.parse(parts[3]));
-                case "E" -> new Event(
-                        parts[2],
-                        LocalDateTime.parse(parts[3]),
-                        LocalDateTime.parse(parts[4]));
+                case "D" -> {
+                    assert parts.length == 4 : "Deadline entry must have 4 fields";
+                    yield new Deadline(
+                            parts[2],
+                            LocalDateTime.parse(parts[3]));
+                }
+                case "E" -> {
+                    assert parts.length == 5 : "Event entry must have 5 fields";
+                    yield new Event(
+                            parts[2],
+                            LocalDateTime.parse(parts[3]),
+                            LocalDateTime.parse(parts[4]));
+                }
                 default -> throw new IllegalArgumentException("Unknown task type");
             };
 
@@ -77,7 +94,6 @@ public class Storage {
 
             tasks.add(task);
         }
-
         return tasks;
     }
 }
