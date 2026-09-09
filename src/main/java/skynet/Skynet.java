@@ -110,7 +110,7 @@ public class Skynet {
 
     private String handleMark(String command) throws SkynetException, IOException {
         commandType = "MarkCommand";
-        int taskIndex = Parser.getTaskIndex(command, 4, tasks.size());
+        int taskIndex = Parser.getTaskIndex(command, "mark", tasks.size());
         assert taskIndex >= 0 && taskIndex < tasks.size() : "Task index must be in valid range";
 
         tasks.get(taskIndex).markAsDone();
@@ -121,7 +121,7 @@ public class Skynet {
 
     private String handleUnmark(String command) throws SkynetException, IOException {
         commandType = "OtherCommand";
-        int taskIndex = Parser.getTaskIndex(command, 6, tasks.size());
+        int taskIndex = Parser.getTaskIndex(command, "unmark", tasks.size());
         assert taskIndex >= 0 && taskIndex < tasks.size() : "Task index must be in valid range";
 
         tasks.get(taskIndex).markAsNotDone();
@@ -162,7 +162,7 @@ public class Skynet {
 
     private String handleDelete(String command) throws SkynetException, IOException {
         commandType = "DeleteCommand";
-        int taskIndex = Parser.getTaskIndex(command, 6, tasks.size());
+        int taskIndex = Parser.getTaskIndex(command, "delete", tasks.size());
         assert taskIndex >= 0 && taskIndex < tasks.size() : "Task index must be in valid range";
 
         Task deletedTask = tasks.delete(taskIndex);
