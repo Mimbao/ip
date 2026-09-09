@@ -1,8 +1,10 @@
 package skynet;
 
 import java.io.IOException;
+import java.util.ArrayDeque;
+import java.util.Deque;
 import java.util.List;
-
+import java.util.stream.Collectors;
 /**
  * Main class for the Skynet application.
  */
@@ -10,6 +12,7 @@ public class Skynet {
     private final Storage storage;
     private TaskList tasks;
     private String commandType;
+    private final Deque<List<Task>> stateHistory = new ArrayDeque<>();
 
     /**
      * Creates a Skynet instance and loads saved tasks.
@@ -46,15 +49,26 @@ public class Skynet {
                 case "deadline" -> handleDeadline(command);
                 case "event" -> handleEvent(command);
                 case "delete" -> handleDelete(command);
+                case "undo" -> handleUndo();
                 default -> {
                     commandType = "OtherCommand";
                     throw new SkynetException("Hello, your command is unrecognized. "
-                            + "Use todo/deadline/event/list/mark/unmark/delete/find/bye.");
+                            + "Use todo/deadline/event/list/mark/unmark/delete/find/undo/bye.");
                 }
             };
         } catch (SkynetException | IOException e) {
             return e.getMessage();
         }
+    }
+
+    private void saveStateSnapshot() {
+        // Create a copy of the task list before modifying it
+        // to track state and support undo by retrieving last state
+        // use copy method instead of clone since protected
+        List<Task> snapshot = tasks.getTasks().stream()
+                .map(Task::copy) //
+                .collect(Collectors.toList());
+        stateHistory.push(snapshot);
     }
 
     /**
@@ -108,6 +122,7 @@ public class Skynet {
 
     private String handleMark(String command) throws SkynetException, IOException {
         commandType = "MarkCommand";
+        saveStateSnapshot();
         int taskIndex = Parser.getTaskIndex(command, "mark", tasks.size());
         assert taskIndex >= 0 && taskIndex < tasks.size() : "Task index must be in valid range";
 
@@ -119,6 +134,7 @@ public class Skynet {
 
     private String handleUnmark(String command) throws SkynetException, IOException {
         commandType = "OtherCommand";
+        saveStateSnapshot();
         int taskIndex = Parser.getTaskIndex(command, "unmark", tasks.size());
         assert taskIndex >= 0 && taskIndex < tasks.size() : "Task index must be in valid range";
 
@@ -130,6 +146,7 @@ public class Skynet {
 
     private String handleTodo(String command) throws SkynetException, IOException {
         commandType = "AddCommand";
+        saveStateSnapshot();
         Task task = Parser.parseTodo(command);
 
         tasks.add(task);
@@ -140,6 +157,7 @@ public class Skynet {
 
     private String handleDeadline(String command) throws SkynetException, IOException {
         commandType = "AddCommand";
+        saveStateSnapshot();
         Task task = Parser.parseDeadline(command);
 
         tasks.add(task);
@@ -150,6 +168,7 @@ public class Skynet {
 
     private String handleEvent(String command) throws SkynetException, IOException {
         commandType = "AddCommand";
+        saveStateSnapshot();
         Task task = Parser.parseEvent(command);
 
         tasks.add(task);
@@ -160,6 +179,7 @@ public class Skynet {
 
     private String handleDelete(String command) throws SkynetException, IOException {
         commandType = "DeleteCommand";
+        saveStateSnapshot();
         int taskIndex = Parser.getTaskIndex(command, "delete", tasks.size());
         assert taskIndex >= 0 && taskIndex < tasks.size() : "Task index must be in valid range";
 
@@ -170,6 +190,19 @@ public class Skynet {
 
         return "Target Erased:\n  " + deletedTask
                 + "\nRemaining targets: " + tasks.size();
+    }
+
+    private String handleUndo() throws SkynetException, IOException {
+        commandType = "OtherCommand";
+
+        if (stateHistory.isEmpty()) {
+            throw new SkynetException("No previous operations to undo.");
+        }
+
+        this.tasks = new TaskList(stateHistory.pop());
+        storage.save(tasks.getTasks());
+
+        return "Previous command has been undone successfully.";
     }
 
     /**

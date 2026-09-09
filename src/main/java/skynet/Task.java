@@ -62,6 +62,13 @@ public abstract class Task {
     }
 
     /**
+     * Creates a deep copy of this task.
+     *
+     * @return a new Task instance with identical state
+     */
+    public abstract Task copy();
+
+    /**
      * Returns a string representation of the task.
      *
      * @return the task represented as a string
