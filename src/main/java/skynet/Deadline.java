@@ -2,6 +2,7 @@ package skynet;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Locale;
 
 /**
  * Represents a deadline with a description and due by date.
@@ -37,10 +38,22 @@ public class Deadline extends Task {
      */
     @Override
     public String toString() {
-        DateTimeFormatter formatter =
-                DateTimeFormatter.ofPattern("MMM dd yyyy, hh:mm a");
+        DateTimeFormatter dateFormatter =
+                DateTimeFormatter.ofPattern("MMM dd yyyy", Locale.ENGLISH);
+
+        DateTimeFormatter timeFormatter =
+                DateTimeFormatter.ofPattern("hh:mm", Locale.ENGLISH);
+
+        String period = by.getHour() < 12 ? "am" : "pm";
+
+        String formattedDateTime = by.format(dateFormatter)
+                + ", "
+                + by.format(timeFormatter)
+                + " "
+                + period;
 
         return "[D][" + getStatusIcon() + "] " + getDescription()
-                + " (by: " + by.format(formatter) + ")";
+                + " (by: " + formattedDateTime + ")";
     }
+
 }
