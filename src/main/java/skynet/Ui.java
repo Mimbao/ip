@@ -53,6 +53,7 @@ public class Ui {
      * @param message the error message to display
      */
     public void showError(String message) {
+        assert message != null : "Error message parameter should not be null";
         System.out.println("ERROR: " + message);
     }
 
@@ -62,8 +63,8 @@ public class Ui {
      * @param tasks the tasks to display
      */
     public void showTaskList(List<Task> tasks) {
+        assert tasks != null : "Task list parameter cannot be null";
         System.out.println("[Target List Display]");
-
         for (int i = 0; i < tasks.size(); i++) {
             System.out.println((i + 1) + ". " + tasks.get(i));
         }
@@ -76,6 +77,8 @@ public class Ui {
      * @param task the task to display
      */
     public void showTask(String message, Task task) {
+        assert message != null : "Display message parameter cannot be null";
+        assert task != null : "Task parameter cannot be null";
         System.out.println(message);
         System.out.println("  " + task);
     }
@@ -87,6 +90,7 @@ public class Ui {
      * @param remainingTasks the number of tasks remaining
      */
     public void showDeletedTask(Task task, int remainingTasks) {
+        assert remainingTasks >= 0 : "Remaining task count cannot be negative";
         System.out.println("Target Erased:");
         System.out.println("  " + task);
         System.out.println("Remaining targets: " + remainingTasks);

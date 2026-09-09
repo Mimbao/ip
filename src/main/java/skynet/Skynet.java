@@ -31,6 +31,7 @@ public class Skynet {
      * @return the response to display
      */
     public String getResponse(String command) {
+        assert command != null : "Command passed to getResponse must not be null";
         try {
             if (command.equals("bye")) {
                 commandType = "OtherCommand";
@@ -45,6 +46,7 @@ public class Skynet {
 
                 String keyword = Parser.parseFind(command);
                 List<Task> matches = tasks.find(keyword);
+                assert matches != null : "TaskList.find() should return a non-null list";
 
                 if (matches.isEmpty()) {
                     return "No matching tasks found.";
@@ -66,6 +68,7 @@ public class Skynet {
                 commandType = "MarkCommand";
 
                 int taskIndex = Parser.getTaskIndex(command, 4, tasks.size());
+                assert taskIndex >= 0 && taskIndex < tasks.size() : "Task index must be in valid range";
                 tasks.get(taskIndex).markAsDone();
                 storage.save(tasks.getTasks());
 
@@ -76,6 +79,7 @@ public class Skynet {
                 commandType = "OtherCommand";
 
                 int taskIndex = Parser.getTaskIndex(command, 6, tasks.size());
+                assert taskIndex >= 0 && taskIndex < tasks.size() : "Task index must be in valid range";
                 tasks.get(taskIndex).markAsNotDone();
                 storage.save(tasks.getTasks());
 
