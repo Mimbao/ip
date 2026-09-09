@@ -84,12 +84,12 @@ public class Ui {
      * Displays a deleted task and the number of remaining tasks.
      *
      * @param task the deleted task
-     * @param remainingTasks the number of tasks remaining
+     * @param remainingTaskCount the number of tasks remaining
      */
-    public void showDeletedTask(Task task, int remainingTasks) {
+    public void showDeletedTask(Task task, int remainingTaskCount) {
         System.out.println("Target Erased:");
         System.out.println("  " + task);
-        System.out.println("Remaining targets: " + remainingTasks);
+        System.out.println("Remaining targets: " + remainingTaskCount);
     }
 
     /**
