@@ -16,6 +16,8 @@ public class DeadlineTest {
         // Act
         String result = deadline.toString();
         System.out.println(result);
+        System.out.println("ACTUAL: [" + result + "]");
+        System.out.println("EXPECTED PART: [Dec 02 2019, 06:00 pm]");
         // Assert
         assertTrue(result.contains("Dec 02 2019, 06:00 pm"));
     }
