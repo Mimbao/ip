@@ -89,12 +89,8 @@ public class Ui {
      * @param task the deleted task
      * @param remainingTaskCount the number of tasks remaining
      */
-<<<<<<< HEAD
     public void showDeletedTask(Task task, int remainingTaskCount) {
-=======
-    public void showDeletedTask(Task task, int remainingTasks) {
-        assert remainingTasks >= 0 : "Remaining task count cannot be negative";
->>>>>>> master
+        assert remainingTaskCount >= 0 : "Remaining task count cannot be negative";
         System.out.println("Target Erased:");
         System.out.println("  " + task);
         System.out.println("Remaining targets: " + remainingTaskCount);
