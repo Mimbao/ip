@@ -21,8 +21,7 @@ public class Parser {
     public static Task parseTodo(String command) throws SkynetException {
         assert command != null : "Command string must not be null";
         assert command.startsWith("todo") : "Command passed to parseTodo must start with 'todo'";
-
-        String description = command.substring("todo".length()).trim();
+        String description = command.substring(4).trim();
         if (description.isEmpty()) {
             throw new SkynetException("Please input a target.");
         }
@@ -39,8 +38,7 @@ public class Parser {
     public static Task parseDeadline(String command) throws SkynetException {
         assert command != null : "Command string must not be null";
         assert command.startsWith("deadline") : "Command passed to parseDeadline must start with 'deadline'";
-
-        String details = command.substring("deadline".length()).trim();
+        String details = command.substring(8).trim();
         int byIndex = details.indexOf(" /by ");
         if (byIndex == -1) {
             throw new SkynetException(
@@ -71,7 +69,6 @@ public class Parser {
     public static Task parseEvent(String command) throws SkynetException {
         assert command != null : "Command string must not be null";
         assert command.startsWith("event") : "Command passed to parseEvent must start with 'event'";
-
         int fromIndex = command.indexOf(" /from ");
         int toIndex = command.indexOf(" /to ");
         if (fromIndex == -1 || toIndex == -1 || fromIndex > toIndex) {
@@ -128,11 +125,9 @@ public class Parser {
      */
     public static int getTaskIndex(String command, String commandWord, int taskCount)
             throws SkynetException {
-
         assert command != null : "Command string must not be null";
         assert commandWord != null : "commandWord string must not be null";
         assert taskCount >= 0 : "taskCount cannot be negative";
-
         String numberText = command.substring(commandWord.length()).trim();
 
         try {

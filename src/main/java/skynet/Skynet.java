@@ -32,11 +32,15 @@ public class Skynet {
      */
     public String getResponse(String command) {
         assert command != null : "Command passed to getResponse must not be null";
+<<<<<<< HEAD
 
+=======
+>>>>>>> master
         try {
             // Extract the first word to determine the command type
             String commandWord = command.split(" ", 2)[0];
 
+<<<<<<< HEAD
             return switch (commandWord) {
                 case "bye" -> handleBye();
                 case "list" -> handleList();
@@ -53,6 +57,102 @@ public class Skynet {
                             + "Use todo/deadline/event/list/mark/unmark/delete/find/bye.");
                 }
             };
+=======
+            } else if (command.equals("list")) {
+                commandType = "OtherCommand";
+                return getTaskListResponse();
+
+            } else if (command.equals("find") || command.startsWith("find ")) {
+                commandType = "OtherCommand";
+
+                String keyword = Parser.parseFind(command);
+                List<Task> matches = tasks.find(keyword);
+                assert matches != null : "TaskList.find() should return a non-null list";
+
+                if (matches.isEmpty()) {
+                    return "No matching tasks found.";
+                }
+
+                StringBuilder response = new StringBuilder(
+                        "Here are the matching tasks in your list:\n");
+
+                for (int i = 0; i < matches.size(); i++) {
+                    response.append(i + 1)
+                            .append(". ")
+                            .append(matches.get(i))
+                            .append("\n");
+                }
+
+                return response.toString().trim();
+
+            } else if (command.equals("mark") || command.startsWith("mark ")) {
+                commandType = "MarkCommand";
+
+                int taskIndex = Parser.getTaskIndex(command, 4, tasks.size());
+                assert taskIndex >= 0 && taskIndex < tasks.size() : "Task index must be in valid range";
+                tasks.get(taskIndex).markAsDone();
+                storage.save(tasks.getTasks());
+
+                return "The Target has been Neutralized:\n  "
+                        + tasks.get(taskIndex);
+
+            } else if (command.equals("unmark") || command.startsWith("unmark ")) {
+                commandType = "OtherCommand";
+
+                int taskIndex = Parser.getTaskIndex(command, 6, tasks.size());
+                assert taskIndex >= 0 && taskIndex < tasks.size() : "Task index must be in valid range";
+                tasks.get(taskIndex).markAsNotDone();
+                storage.save(tasks.getTasks());
+
+                return "Failed to Complete:\n  "
+                        + tasks.get(taskIndex);
+
+            } else if (command.equals("todo") || command.startsWith("todo ")) {
+                commandType = "AddCommand";
+
+                Task task = Parser.parseTodo(command);
+                tasks.add(task);
+                storage.save(tasks.getTasks());
+
+                return "Target in time has been located:\n  " + task;
+
+            } else if (command.equals("deadline")
+                    || command.startsWith("deadline ")) {
+                commandType = "AddCommand";
+
+                Task task = Parser.parseDeadline(command);
+                tasks.add(task);
+                storage.save(tasks.getTasks());
+
+                return "Incursion Risk, Finish Deadline:\n  " + task;
+
+            } else if (command.equals("event")
+                    || command.startsWith("event ")) {
+                commandType = "AddCommand";
+
+                Task task = Parser.parseEvent(command);
+                tasks.add(task);
+                storage.save(tasks.getTasks());
+
+                return "Temporal target located:\n  " + task;
+
+            } else if (command.equals("delete")
+                    || command.startsWith("delete ")) {
+                commandType = "DeleteCommand";
+
+                int taskIndex = Parser.getTaskIndex(command, 6, tasks.size());
+                Task deletedTask = tasks.delete(taskIndex);
+                storage.save(tasks.getTasks());
+
+                return "Target Erased:\n  " + deletedTask
+                        + "\nRemaining targets: " + tasks.size();
+
+            } else {
+                commandType = "OtherCommand";
+                throw new SkynetException("Hello, your command is unrecognized. "
+                        + "Use todo/deadline/event/list/mark/unmark/delete/find/bye.");
+            }
+>>>>>>> master
 
         } catch (SkynetException | IOException e) {
             return e.getMessage();

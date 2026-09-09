@@ -23,7 +23,10 @@ public class Storage {
      */
     void save(List<Task> tasks) throws IOException {
         assert tasks != null : "TaskList passed to save() must not be null";
+<<<<<<< HEAD
 
+=======
+>>>>>>> master
         List<String> lines = new ArrayList<>();
         for (Task task : tasks) {
             assert task != null : "Task list should not contain null entries";
