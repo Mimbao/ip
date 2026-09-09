@@ -4,11 +4,11 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
- * Handles saving and loading of a TaskList.
+ * Handles saving and loading of a TaskList using Java Streams.
  */
 public class Storage {
     private static final Path SAVE_FILE_PATH = Path.of("data", "saveFile.txt");
@@ -23,26 +23,10 @@ public class Storage {
      */
     void save(List<Task> tasks) throws IOException {
         assert tasks != null : "TaskList passed to save() must not be null";
-<<<<<<< HEAD
 
-=======
->>>>>>> master
-        List<String> lines = new ArrayList<>();
-        for (Task task : tasks) {
-            assert task != null : "Task list should not contain null entries";
-            String status = task.isDone() ? "1" : "0";
-
-            switch (task) {
-                case Todo todo -> lines.add("T" + DELIMITER + status + DELIMITER
-                        + todo.getDescription());
-                case Deadline deadline -> lines.add("D" + DELIMITER + status + DELIMITER
-                        + deadline.getDescription() + DELIMITER + deadline.getBy());
-                case Event event -> lines.add("E" + DELIMITER + status + DELIMITER
-                        + event.getDescription() + DELIMITER + event.getFrom()
-                        + DELIMITER + event.getTo());
-                default -> throw new IllegalArgumentException("Unknown target type");
-            }
-        }
+        List<String> lines = tasks.stream()
+                .map(this::convertTaskToLine)
+                .collect(Collectors.toList());
 
         if (SAVE_FILE_PATH.getParent() != null) {
             Files.createDirectories(SAVE_FILE_PATH.getParent());
@@ -51,49 +35,55 @@ public class Storage {
     }
 
     /**
-     * Loads the previously saved target list from disk, does correct translation.
+     * Loads the previously saved target list from disk.
      *
      * @return a list of saved tasks, or an empty list when no save file exists
      * @throws IOException if the save file cannot be read
      */
     List<Task> load() throws IOException {
-        List<Task> tasks = new ArrayList<>();
-
         if (Files.notExists(SAVE_FILE_PATH)) {
-            return tasks;
+            return List.of();
         }
 
-        List<String> lines = Files.readAllLines(SAVE_FILE_PATH);
-        for (String line : lines) {
-            assert line != null : "Save file line read should not be null";
-
-            String[] parts = line.split(DELIMITER_REGEX);
-            assert parts.length >= 3 : "Formatted save line must have at least 3 pipe-separated fields";
-
-            Task task = switch (parts[0]) {
-                case "T" -> new Todo(parts[2]);
-                case "D" -> {
-                    assert parts.length == 4 : "Deadline entry must have 4 fields";
-                    yield new Deadline(
-                            parts[2],
-                            LocalDateTime.parse(parts[3]));
-                }
-                case "E" -> {
-                    assert parts.length == 5 : "Event entry must have 5 fields";
-                    yield new Event(
-                            parts[2],
-                            LocalDateTime.parse(parts[3]),
-                            LocalDateTime.parse(parts[4]));
-                }
-                default -> throw new IllegalArgumentException("Unknown task type");
-            };
-
-            if (parts[1].equals("1")) {
-                task.markAsDone();
-            }
-
-            tasks.add(task);
+        try (var linesStream = Files.lines(SAVE_FILE_PATH)) {
+            return linesStream
+                    .map(this::convertLineToTask)
+                    .collect(Collectors.toList());
         }
-        return tasks;
+    }
+
+    private String convertTaskToLine(Task task) {
+        assert task != null : "Task should not be null during save";
+        String status = task.isDone() ? "1" : "0";
+
+        return switch (task) {
+            case Todo todo -> "T" + DELIMITER + status + DELIMITER + todo.getDescription();
+            case Deadline deadline -> "D" + DELIMITER + status + DELIMITER
+                    + deadline.getDescription() + DELIMITER + deadline.getBy();
+            case Event event -> "E" + DELIMITER + status + DELIMITER
+                    + event.getDescription() + DELIMITER + event.getFrom()
+                    + DELIMITER + event.getTo();
+            default -> throw new IllegalArgumentException("Unknown target type");
+        };
+    }
+
+    private Task convertLineToTask(String line) {
+        assert line != null : "Line read from disk should not be null";
+
+        String[] parts = line.split(DELIMITER_REGEX);
+        assert parts.length >= 3 : "Formatted save line must have at least 3 fields";
+
+        Task task = switch (parts[0]) {
+            case "T" -> new Todo(parts[2]);
+            case "D" -> new Deadline(parts[2], LocalDateTime.parse(parts[3]));
+            case "E" -> new Event(parts[2], LocalDateTime.parse(parts[3]), LocalDateTime.parse(parts[4]));
+            default -> throw new IllegalArgumentException("Unknown task type");
+        };
+
+        if (parts[1].equals("1")) {
+            task.markAsDone();
+        }
+
+        return task;
     }
 }
