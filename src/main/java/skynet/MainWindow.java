@@ -8,8 +8,9 @@ import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.VBox;
+
 /**
- * Controller for the main.css GUI.
+ * Controller for the main GUI.
  */
 public class MainWindow extends AnchorPane {
     @FXML
@@ -29,13 +30,18 @@ public class MainWindow extends AnchorPane {
             Objects.requireNonNull(
                     getClass().getResourceAsStream("/images/Arnold.png")));
 
-
     /**
-     * Initializes the main window and displays the welcome message.
+     * Initializes the main window, binds container width for responsiveness,
+     * and displays the welcome message.
      */
     @FXML
     public void initialize() {
+        // Auto-scroll to bottom as content grows
         scrollPane.vvalueProperty().bind(dialogContainer.heightProperty());
+
+        // Dynamic resizing: Bind VBox width to ScrollPane viewport width
+        dialogContainer.prefWidthProperty().bind(scrollPane.widthProperty().subtract(15));
+
         String welcomeMessage = "Welcome to SkyNET.\n"
                 + "How may we assist you today?";
 
@@ -43,7 +49,6 @@ public class MainWindow extends AnchorPane {
                 DialogBox.getSkynetDialog(welcomeMessage, skynetImage, "OtherCommand")
         );
     }
-
 
     /**
      * Injects the Skynet instance.
@@ -55,12 +60,16 @@ public class MainWindow extends AnchorPane {
     }
 
     /**
-     * Creates two dialog boxes, one echoing user input and the other containing Duke's reply and then appends them to
-     * the dialog container. Clears the user input after processing.
+     * Creates two dialog boxes, one echoing user input and the other containing Duke's reply
+     * and then appends them to the dialog container. Clears the user input after processing.
      */
     @FXML
     private void handleUserInput() {
         String input = userInput.getText();
+        if (input.trim().isEmpty()) {
+            return;
+        }
+
         String response = skynet.getResponse(input);
         String commandType = skynet.getCommandType();
         dialogContainer.getChildren().addAll(
@@ -70,4 +79,3 @@ public class MainWindow extends AnchorPane {
         userInput.clear();
     }
 }
-
