@@ -44,7 +44,7 @@ public class Ui {
      * Displays the goodbye message.
      */
     public void showGoodbye() {
-        System.out.println("The Future, now. Chat Terminated.");
+        System.out.println("The Future is now. Chat Terminated.");
     }
 
     /**
