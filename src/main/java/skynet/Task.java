@@ -13,7 +13,14 @@ public abstract class Task {
      * @param description the description of the task
      */
     public Task(String description) {
-        assert description != null : "Task description cannot be null";
+        if (description == null || description.isBlank()) {
+            throw new IllegalArgumentException("Task description cannot be empty.");
+        }
+        if (description.contains(" | ") || description.contains("\n")
+                || description.contains("\r")) {
+            throw new IllegalArgumentException(
+                    "Task descriptions cannot contain ' | ' or line breaks.");
+        }
         this.description = description;
         this.status = TaskStatus.NOT_DONE;
     }
@@ -23,7 +30,6 @@ public abstract class Task {
      */
     public void markAsDone() {
         status = TaskStatus.DONE;
-        assert isDone() : "Task state must be DONE after markAsDone()";
     }
 
     /**
@@ -31,7 +37,6 @@ public abstract class Task {
      */
     public void markAsNotDone() {
         status = TaskStatus.NOT_DONE;
-        assert !isDone() : "Task state must be NOT_DONE after markAsNotDone()";
     }
 
     /**

@@ -2,6 +2,7 @@ package skynet;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Represents a collection of tasks and provides operations to modify/access it.
@@ -22,7 +23,13 @@ public class TaskList {
      * @param tasks the initial list of tasks
      */
     public TaskList(List<Task> tasks) {
-        this.tasks = tasks;
+        if (tasks == null) {
+            throw new IllegalArgumentException("Task list cannot be null.");
+        }
+        if (tasks.stream().anyMatch(Objects::isNull)) {
+            throw new IllegalArgumentException("Task list cannot contain null tasks.");
+        }
+        this.tasks = new ArrayList<>(tasks);
     }
 
     /**
@@ -31,6 +38,9 @@ public class TaskList {
      * @param task the task to add
      */
     public void add(Task task) {
+        if (task == null) {
+            throw new IllegalArgumentException("Task cannot be null.");
+        }
         tasks.add(task);
     }
 
@@ -78,6 +88,9 @@ public class TaskList {
      * @return The List of Tasks
      */
     public List<Task> find(String keyword) {
+        if (keyword == null || keyword.isBlank()) {
+            throw new IllegalArgumentException("Search keyword cannot be empty.");
+        }
         List<Task> matches = new ArrayList<>();
 
         for (Task task : tasks) {

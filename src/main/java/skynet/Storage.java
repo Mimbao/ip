@@ -4,8 +4,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * Handles saving and loading of a TaskList using Java Streams.
@@ -22,16 +22,19 @@ public class Storage {
      * @throws IOException if the save file cannot be written
      */
     void save(List<Task> tasks) throws IOException {
-        assert tasks != null : "TaskList passed to save() must not be null";
+        if (tasks == null) {
+            throw new IllegalArgumentException("Task list passed to save cannot be null.");
+        }
 
-        List<String> lines = tasks.stream()
-                .map(this::convertTaskToLine)
-                .collect(Collectors.toList());
+        List<String> lines = tasks.stream().map(this::convertTaskToLine).toList();
 
         if (SAVE_FILE_PATH.getParent() != null) {
             Files.createDirectories(SAVE_FILE_PATH.getParent());
         }
-        Files.write(SAVE_FILE_PATH, lines);
+        Path temporaryPath = SAVE_FILE_PATH.resolveSibling(SAVE_FILE_PATH.getFileName() + ".tmp");
+        Files.write(temporaryPath, lines);
+        Files.move(temporaryPath, SAVE_FILE_PATH,
+                java.nio.file.StandardCopyOption.REPLACE_EXISTING);
     }
 
     /**
@@ -45,15 +48,23 @@ public class Storage {
             return List.of();
         }
 
-        try (var linesStream = Files.lines(SAVE_FILE_PATH)) {
-            return linesStream
-                    .map(this::convertLineToTask)
-                    .collect(Collectors.toList());
+        List<String> lines = Files.readAllLines(SAVE_FILE_PATH);
+        List<Task> tasks = new ArrayList<>();
+        for (int i = 0; i < lines.size(); i++) {
+            try {
+                tasks.add(convertLineToTask(lines.get(i)));
+            } catch (RuntimeException e) {
+                throw new IOException("Save file contains invalid data on line " + (i + 1)
+                        + ".", e);
+            }
         }
+        return tasks;
     }
 
     private String convertTaskToLine(Task task) {
-        assert task != null : "Task should not be null during save";
+        if (task == null) {
+            throw new IllegalArgumentException("Task should not be null during save.");
+        }
         String status = task.isDone() ? "1" : "0";
 
         return switch (task) {
@@ -68,16 +79,30 @@ public class Storage {
     }
 
     private Task convertLineToTask(String line) {
-        assert line != null : "Line read from disk should not be null";
+        if (line == null || line.isBlank()) {
+            throw new IllegalArgumentException("Save file contains a blank line.");
+        }
 
-        String[] parts = line.split(DELIMITER_REGEX);
-        assert parts.length >= 3 : "Formatted save line must have at least 3 fields";
+        String[] parts = line.split(DELIMITER_REGEX, -1);
+        if (parts.length < 2 || !parts[1].equals("0") && !parts[1].equals("1")) {
+            throw new IllegalArgumentException("Invalid task status in save file.");
+        }
 
         Task task = switch (parts[0]) {
-            case "T" -> new Todo(parts[2]);
-            case "D" -> new Deadline(parts[2], LocalDateTime.parse(parts[3]));
-            case "E" -> new Event(parts[2], LocalDateTime.parse(parts[3]), LocalDateTime.parse(parts[4]));
-            default -> throw new IllegalArgumentException("Unknown task type");
+            case "T" -> {
+                requireFieldCount(parts, 3);
+                yield new Todo(parts[2]);
+            }
+            case "D" -> {
+                requireFieldCount(parts, 4);
+                yield new Deadline(parts[2], LocalDateTime.parse(parts[3]));
+            }
+            case "E" -> {
+                requireFieldCount(parts, 5);
+                yield new Event(parts[2], LocalDateTime.parse(parts[3]),
+                        LocalDateTime.parse(parts[4]));
+            }
+            default -> throw new IllegalArgumentException("Unknown task type in save file.");
         };
 
         if (parts[1].equals("1")) {
@@ -85,5 +110,17 @@ public class Storage {
         }
 
         return task;
+    }
+
+    /**
+     * Ensures that a serialized task has exactly the expected number of fields.
+     *
+     * @param parts serialized task fields
+     * @param expectedCount expected number of fields
+     */
+    private void requireFieldCount(String[] parts, int expectedCount) {
+        if (parts.length != expectedCount) {
+            throw new IllegalArgumentException("Incorrect number of fields in save file.");
+        }
     }
 }
