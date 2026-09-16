@@ -12,6 +12,7 @@ public class Skynet {
     private final Storage storage;
     private TaskList tasks;
     private String commandType;
+    private String startupWarning;
     private final Deque<List<Task>> stateHistory = new ArrayDeque<>();
 
     /**
@@ -22,8 +23,9 @@ public class Skynet {
 
         try {
             tasks = new TaskList(storage.load());
-        } catch (IOException e) {
+        } catch (IOException | SecurityException e) {
             tasks = new TaskList();
+            startupWarning = "Saved tasks could not be loaded. The current task list starts empty.";
         }
     }
 
@@ -34,14 +36,31 @@ public class Skynet {
      * @return the response to display
      */
     public String getResponse(String command) {
-        assert command != null : "Command passed to getResponse must not be null";
         try {
+            if (command == null || command.isBlank()) {
+                throw new SkynetException("Please enter a command.");
+            }
+            if (!command.equals(command.trim())) {
+                throw new SkynetException("Command must not start or end with spaces.");
+            }
+            for (int i = 1; i < command.length(); i++) {
+                if (Character.isWhitespace(command.charAt(i - 1))
+                        && Character.isWhitespace(command.charAt(i))) {
+                    throw new SkynetException("Please use only one space between command parts.");
+                }
+            }
             // Extract the first word to determine the command type
             String commandWord = command.split(" ", 2)[0];
 
-            return switch (commandWord) {
-                case "bye" -> handleBye();
-                case "list" -> handleList();
+            String response = switch (commandWord) {
+                case "bye" -> {
+                    Parser.validateSimpleCommand(command, "bye");
+                    yield handleBye();
+                }
+                case "list" -> {
+                    Parser.validateSimpleCommand(command, "list");
+                    yield handleList();
+                }
                 case "find" -> handleFind(command);
                 case "mark" -> handleMark(command);
                 case "unmark" -> handleUnmark(command);
@@ -49,7 +68,10 @@ public class Skynet {
                 case "deadline" -> handleDeadline(command);
                 case "event" -> handleEvent(command);
                 case "delete" -> handleDelete(command);
-                case "undo" -> handleUndo();
+                case "undo" -> {
+                    Parser.validateSimpleCommand(command, "undo");
+                    yield handleUndo();
+                }
                 default -> {
                     commandType = "OtherCommand";
                     throw new SkynetException("Hello, your command is unrecognized. \n"
@@ -66,9 +88,25 @@ public class Skynet {
                             + "- bye \n");
                 }
             };
-        } catch (SkynetException | IOException e) {
-            return e.getMessage();
+            return includeStartupWarning(response);
+        } catch (SkynetException | IOException | IllegalArgumentException e) {
+            return includeStartupWarning(e.getMessage());
         }
+    }
+
+    /**
+     * Adds a startup storage warning to the first response, if one exists.
+     *
+     * @param response the normal command response
+     * @return the response with the startup warning when applicable
+     */
+    private String includeStartupWarning(String response) {
+        if (startupWarning == null) {
+            return response;
+        }
+        String warning = startupWarning;
+        startupWarning = null;
+        return warning + "\n" + response;
     }
 
     private void saveStateSnapshot() {
@@ -97,7 +135,6 @@ public class Skynet {
 
     private String handleList() {
         commandType = "OtherCommand";
-        assert tasks != null : "TaskList cannot be null when building list response";
 
         StringBuilder response = new StringBuilder("[Target List Display]\n");
         for (int i = 0; i < tasks.size(); i++) {
@@ -113,8 +150,6 @@ public class Skynet {
         commandType = "OtherCommand";
         String keyword = Parser.parseFind(command);
         List<Task> matches = tasks.find(keyword);
-
-        assert matches != null : "TaskList.find() should return a non-null list";
 
         if (matches.isEmpty()) {
             return "No matching tasks found.";
@@ -132,71 +167,97 @@ public class Skynet {
 
     private String handleMark(String command) throws SkynetException, IOException {
         commandType = "MarkCommand";
-        saveStateSnapshot();
         int taskIndex = Parser.getTaskIndex(command, "mark", tasks.size());
-        assert taskIndex >= 0 && taskIndex < tasks.size() : "Task index must be in valid range";
+        saveStateSnapshot();
 
-        tasks.get(taskIndex).markAsDone();
-        storage.save(tasks.getTasks());
+        try {
+            tasks.get(taskIndex).markAsDone();
+            storage.save(tasks.getTasks());
+        } catch (IOException e) {
+            restoreLastSnapshot();
+            throw e;
+        }
 
         return "The Target has been Neutralized:\n  " + tasks.get(taskIndex);
     }
 
     private String handleUnmark(String command) throws SkynetException, IOException {
         commandType = "OtherCommand";
-        saveStateSnapshot();
         int taskIndex = Parser.getTaskIndex(command, "unmark", tasks.size());
-        assert taskIndex >= 0 && taskIndex < tasks.size() : "Task index must be in valid range";
+        saveStateSnapshot();
 
-        tasks.get(taskIndex).markAsNotDone();
-        storage.save(tasks.getTasks());
+        try {
+            tasks.get(taskIndex).markAsNotDone();
+            storage.save(tasks.getTasks());
+        } catch (IOException e) {
+            restoreLastSnapshot();
+            throw e;
+        }
 
         return "Failed to Complete:\n  " + tasks.get(taskIndex);
     }
 
     private String handleTodo(String command) throws SkynetException, IOException {
         commandType = "AddCommand";
-        saveStateSnapshot();
         Task task = Parser.parseTodo(command);
 
-        tasks.add(task);
-        storage.save(tasks.getTasks());
+        saveStateSnapshot();
+        try {
+            tasks.add(task);
+            storage.save(tasks.getTasks());
+        } catch (IOException e) {
+            restoreLastSnapshot();
+            throw e;
+        }
 
         return "Target in time has been located:\n  " + task;
     }
 
     private String handleDeadline(String command) throws SkynetException, IOException {
         commandType = "AddCommand";
-        saveStateSnapshot();
         Task task = Parser.parseDeadline(command);
 
-        tasks.add(task);
-        storage.save(tasks.getTasks());
+        saveStateSnapshot();
+        try {
+            tasks.add(task);
+            storage.save(tasks.getTasks());
+        } catch (IOException e) {
+            restoreLastSnapshot();
+            throw e;
+        }
 
         return "Incursion Risk, Finish Deadline:\n  " + task;
     }
 
     private String handleEvent(String command) throws SkynetException, IOException {
         commandType = "AddCommand";
-        saveStateSnapshot();
         Task task = Parser.parseEvent(command);
 
-        tasks.add(task);
-        storage.save(tasks.getTasks());
+        saveStateSnapshot();
+        try {
+            tasks.add(task);
+            storage.save(tasks.getTasks());
+        } catch (IOException e) {
+            restoreLastSnapshot();
+            throw e;
+        }
 
         return "Temporal target located:\n  " + task;
     }
 
     private String handleDelete(String command) throws SkynetException, IOException {
         commandType = "DeleteCommand";
-        saveStateSnapshot();
         int taskIndex = Parser.getTaskIndex(command, "delete", tasks.size());
-        assert taskIndex >= 0 && taskIndex < tasks.size() : "Task index must be in valid range";
+        saveStateSnapshot();
 
-        Task deletedTask = tasks.delete(taskIndex);
-        assert deletedTask != null : "Deleted task cannot be null";
-
-        storage.save(tasks.getTasks());
+        Task deletedTask;
+        try {
+            deletedTask = tasks.delete(taskIndex);
+            storage.save(tasks.getTasks());
+        } catch (IOException e) {
+            restoreLastSnapshot();
+            throw e;
+        }
 
         return "Target Erased:\n  " + deletedTask
                 + "\nRemaining targets: " + tasks.size();
@@ -209,10 +270,38 @@ public class Skynet {
             throw new SkynetException("No previous operations to undo.");
         }
 
-        this.tasks = new TaskList(stateHistory.pop());
-        storage.save(tasks.getTasks());
+        List<Task> currentState = copyCurrentTasks();
+        List<Task> previousState = stateHistory.pop();
+        this.tasks = new TaskList(previousState);
+        try {
+            storage.save(tasks.getTasks());
+        } catch (IOException e) {
+            this.tasks = new TaskList(currentState);
+            stateHistory.push(previousState);
+            throw e;
+        }
 
         return "Previous command has been undone successfully.";
+    }
+
+    /**
+     * Restores and removes the snapshot created for a failed modification.
+     */
+    private void restoreLastSnapshot() {
+        if (!stateHistory.isEmpty()) {
+            tasks = new TaskList(stateHistory.pop());
+        }
+    }
+
+    /**
+     * Creates a deep copy of the current task state.
+     *
+     * @return copied tasks
+     */
+    private List<Task> copyCurrentTasks() {
+        return tasks.getTasks().stream()
+                .map(Task::copy)
+                .collect(Collectors.toList());
     }
 
     /**

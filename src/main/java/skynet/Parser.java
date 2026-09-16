@@ -3,13 +3,60 @@ package skynet;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.time.format.ResolverStyle;
 
 /**
  * Parses user commands into tasks and task indices.
  */
 public class Parser {
     private static final DateTimeFormatter INPUT_FORMATTER =
-            DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+            DateTimeFormatter.ofPattern("uuuu-MM-dd HH:mm")
+                    .withResolverStyle(ResolverStyle.STRICT);
+
+    /**
+     * Validates the common structure of a command.
+     *
+     * @param command the command to validate
+     * @param expectedWord the command word expected at the beginning
+     * @throws SkynetException if the command is malformed
+     */
+    static void validateCommand(String command, String expectedWord) throws SkynetException {
+        if (expectedWord == null || expectedWord.isBlank()) {
+            throw new SkynetException("Invalid command format.");
+        }
+        if (command == null || command.isBlank()) {
+            throw new SkynetException("Please enter a command.");
+        }
+        if (!command.equals(command.trim())) {
+            throw new SkynetException("Command must not start or end with spaces.");
+        }
+        if (!command.startsWith(expectedWord)
+                || (command.length() > expectedWord.length()
+                && !Character.isWhitespace(command.charAt(expectedWord.length())))) {
+            throw new SkynetException("Invalid command format.");
+        }
+        for (int i = 1; i < command.length(); i++) {
+            if (Character.isWhitespace(command.charAt(i - 1))
+                    && Character.isWhitespace(command.charAt(i))) {
+                throw new SkynetException("Please use only one space between command parts.");
+            }
+        }
+    }
+
+    /**
+     * Validates a command that does not accept parameters.
+     *
+     * @param command the command to validate
+     * @param expectedWord the expected command word
+     * @throws SkynetException if parameters are present or the command is malformed
+     */
+    static void validateSimpleCommand(String command, String expectedWord)
+            throws SkynetException {
+        validateCommand(command, expectedWord);
+        if (!command.equals(expectedWord)) {
+            throw new SkynetException(expectedWord + " does not accept parameters.");
+        }
+    }
 
     /**
      * Parses a to-do command and creates a Todo task.
@@ -19,8 +66,7 @@ public class Parser {
      * @throws SkynetException if the command has an empty description
      */
     public static Task parseTodo(String command) throws SkynetException {
-        assert command != null : "Command string must not be null";
-        assert command.startsWith("todo") : "Command passed to parseTodo must start with 'todo'";
+        validateCommand(command, "todo");
         String description = command.substring(4).trim();
         if (description.isEmpty()) {
             throw new SkynetException("Please input a target.");
@@ -36,11 +82,10 @@ public class Parser {
      * @throws SkynetException if the command format or deadline date is invalid
      */
     public static Task parseDeadline(String command) throws SkynetException {
-        assert command != null : "Command string must not be null";
-        assert command.startsWith("deadline") : "Command passed to parseDeadline must start with 'deadline'";
+        validateCommand(command, "deadline");
         String details = command.substring(8).trim();
         int byIndex = details.indexOf(" /by ");
-        if (byIndex == -1) {
+        if (byIndex == -1 || byIndex != details.lastIndexOf(" /by ")) {
             throw new SkynetException(
                     "Please use the format: deadline DESCRIPTION /by yyyy-MM-dd HH:mm");
         }
@@ -67,11 +112,12 @@ public class Parser {
      * @throws SkynetException if the command format or event dates are invalid
      */
     public static Task parseEvent(String command) throws SkynetException {
-        assert command != null : "Command string must not be null";
-        assert command.startsWith("event") : "Command passed to parseEvent must start with 'event'";
+        validateCommand(command, "event");
         int fromIndex = command.indexOf(" /from ");
         int toIndex = command.indexOf(" /to ");
-        if (fromIndex == -1 || toIndex == -1 || fromIndex > toIndex) {
+        if (fromIndex == -1 || toIndex == -1 || fromIndex > toIndex
+                || fromIndex != command.lastIndexOf(" /from ")
+                || toIndex != command.lastIndexOf(" /to ")) {
             throw new SkynetException(
                     "Please use the format: event DESCRIPTION "
                             + "/from yyyy-MM-dd HH:mm "
@@ -90,6 +136,9 @@ public class Parser {
         try {
             LocalDateTime from = LocalDateTime.parse(fromText, INPUT_FORMATTER);
             LocalDateTime to = LocalDateTime.parse(toText, INPUT_FORMATTER);
+            if (!from.isBefore(to)) {
+                throw new SkynetException("Event start time must be before end time.");
+            }
             return new Event(description, from, to);
         } catch (DateTimeParseException e) {
             throw new SkynetException("Invalid date. Please use yyyy-MM-dd HH:mm.");
@@ -104,8 +153,7 @@ public class Parser {
      * @throws SkynetException if the keyword is empty
      */
     public static String parseFind(String command) throws SkynetException {
-        assert command != null : "Command string must not be null";
-        assert command.startsWith("find") : "Command passed to parseFind must start with 'find'";
+        validateCommand(command, "find");
 
         String keyword = command.substring("find".length()).trim();
         if (keyword.isEmpty()) {
@@ -125,10 +173,15 @@ public class Parser {
      */
     public static int getTaskIndex(String command, String commandWord, int taskCount)
             throws SkynetException {
-        assert command != null : "Command string must not be null";
-        assert commandWord != null : "commandWord string must not be null";
-        assert taskCount >= 0 : "taskCount cannot be negative";
+        if (commandWord == null || taskCount < 0) {
+            throw new SkynetException("Invalid task command.");
+        }
+        validateCommand(command, commandWord);
         String numberText = command.substring(commandWord.length()).trim();
+
+        if (!numberText.matches("\\d+")) {
+            throw new SkynetException("Please input a Target Number.");
+        }
 
         try {
             int taskNumber = Integer.parseInt(numberText);
