@@ -2,6 +2,7 @@ package skynet;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Locale;
 
 /**
  * Represents an event with a description, start date and end date.
@@ -69,7 +70,7 @@ public class Event extends Task {
     @Override
     public String toString() {
         DateTimeFormatter formatter =
-                DateTimeFormatter.ofPattern("MMM dd yyyy, hh:mm a");
+                DateTimeFormatter.ofPattern("MMM dd yyyy, hh:mm a", Locale.ENGLISH);
 
         return "[E][" + getStatusIcon() + "] " + getDescription()
                 + " (from: " + from.format(formatter)

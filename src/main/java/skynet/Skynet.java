@@ -19,7 +19,19 @@ public class Skynet {
      * Creates a Skynet instance and loads saved tasks.
      */
     public Skynet() {
-        storage = new Storage();
+        this(new Storage());
+    }
+
+    /**
+     * Creates a Skynet instance with supplied storage.
+     *
+     * @param storage storage implementation to use
+     */
+    Skynet(Storage storage) {
+        if (storage == null) {
+            throw new IllegalArgumentException("Storage cannot be null.");
+        }
+        this.storage = storage;
 
         try {
             tasks = new TaskList(storage.load());

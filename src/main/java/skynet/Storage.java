@@ -8,12 +8,32 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Handles saving and loading of a TaskList using Java Streams.
+ * Handles saving and loading of a TaskList.
  */
 public class Storage {
-    private static final Path SAVE_FILE_PATH = Path.of("data", "saveFile.txt");
+    private static final Path DEFAULT_SAVE_FILE_PATH = Path.of("data", "saveFile.txt");
     private static final String DELIMITER = " | ";
     private static final String DELIMITER_REGEX = " \\| ";
+    private final Path saveFilePath;
+
+    /**
+     * Creates storage using the application's default save-file location.
+     */
+    public Storage() {
+        this(DEFAULT_SAVE_FILE_PATH);
+    }
+
+    /**
+     * Creates storage using a specified save-file location.
+     *
+     * @param saveFilePath path of the save file
+     */
+    Storage(Path saveFilePath) {
+        if (saveFilePath == null) {
+            throw new IllegalArgumentException("Save-file path cannot be null.");
+        }
+        this.saveFilePath = saveFilePath;
+    }
 
     /**
      * Saves the chatbot's tasks to a file on disk.
@@ -28,12 +48,12 @@ public class Storage {
 
         List<String> lines = tasks.stream().map(this::convertTaskToLine).toList();
 
-        if (SAVE_FILE_PATH.getParent() != null) {
-            Files.createDirectories(SAVE_FILE_PATH.getParent());
+        if (saveFilePath.getParent() != null) {
+            Files.createDirectories(saveFilePath.getParent());
         }
-        Path temporaryPath = SAVE_FILE_PATH.resolveSibling(SAVE_FILE_PATH.getFileName() + ".tmp");
+        Path temporaryPath = saveFilePath.resolveSibling(saveFilePath.getFileName() + ".tmp");
         Files.write(temporaryPath, lines);
-        Files.move(temporaryPath, SAVE_FILE_PATH,
+        Files.move(temporaryPath, saveFilePath,
                 java.nio.file.StandardCopyOption.REPLACE_EXISTING);
     }
 
@@ -44,11 +64,11 @@ public class Storage {
      * @throws IOException if the save file cannot be read
      */
     List<Task> load() throws IOException {
-        if (Files.notExists(SAVE_FILE_PATH)) {
+        if (Files.notExists(saveFilePath)) {
             return List.of();
         }
 
-        List<String> lines = Files.readAllLines(SAVE_FILE_PATH);
+        List<String> lines = Files.readAllLines(saveFilePath);
         List<Task> tasks = new ArrayList<>();
         for (int i = 0; i < lines.size(); i++) {
             try {
@@ -84,7 +104,8 @@ public class Storage {
         }
 
         String[] parts = line.split(DELIMITER_REGEX, -1);
-        if (parts.length < 2 || !parts[1].equals("0") && !parts[1].equals("1")) {
+        if (parts.length < 2
+                || (!parts[1].equals("0") && !parts[1].equals("1"))) {
             throw new IllegalArgumentException("Invalid task status in save file.");
         }
 

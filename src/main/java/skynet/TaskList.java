@@ -2,6 +2,7 @@ package skynet;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 
 /**
@@ -92,9 +93,10 @@ public class TaskList {
             throw new IllegalArgumentException("Search keyword cannot be empty.");
         }
         List<Task> matches = new ArrayList<>();
+        String lowercaseKeyword = keyword.toLowerCase(Locale.ROOT);
 
         for (Task task : tasks) {
-            if (task.getDescription().toLowerCase().contains(keyword.toLowerCase())) {
+            if (task.getDescription().toLowerCase(Locale.ROOT).contains(lowercaseKeyword)) {
                 matches.add(task);
             }
         }

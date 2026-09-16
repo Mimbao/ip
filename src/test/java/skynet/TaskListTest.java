@@ -1,6 +1,7 @@
 package skynet;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.List;
 
@@ -57,5 +58,57 @@ public class TaskListTest {
 
         assertEquals(1, matches.size());
         assertEquals("read book", matches.get(0).getDescription());
+    }
+
+    @Test
+    void find_isCaseInsensitiveAndReturnsEmptyWhenNothingMatches() {
+        TaskList tasks = new TaskList(List.of(
+                new Todo("Read a Book"),
+                new Todo("Go shopping")));
+
+        assertEquals(1, tasks.find("book").size());
+        assertEquals(0, tasks.find("holiday").size());
+    }
+
+    @Test
+    void add_nullTask_isRejected() {
+        TaskList tasks = new TaskList();
+
+        assertThrows(IllegalArgumentException.class, () -> tasks.add(null));
+    }
+
+    @Test
+    void find_nullOrBlankKeyword_isRejected() {
+        TaskList tasks = new TaskList(List.of(new Todo("test task")));
+
+        assertThrows(IllegalArgumentException.class, () -> tasks.find(null));
+        assertThrows(IllegalArgumentException.class, () -> tasks.find("   "));
+    }
+
+    @Test
+    void constructor_copiesInputList() {
+        List<Task> original = new java.util.ArrayList<>();
+        original.add(new Todo("test task"));
+        TaskList tasks = new TaskList(original);
+
+        original.clear();
+
+        assertEquals(1, tasks.size());
+    }
+
+    @Test
+    void constructor_nullListOrNullElement_isRejected() {
+        assertThrows(IllegalArgumentException.class, () -> new TaskList(null));
+        assertThrows(IllegalArgumentException.class, () ->
+                new TaskList(java.util.Arrays.asList(new Todo("valid"), null)));
+    }
+
+    @Test
+    void getAndDelete_invalidIndex_areRejected() {
+        TaskList tasks = new TaskList(List.of(new Todo("test task")));
+
+        assertThrows(IndexOutOfBoundsException.class, () -> tasks.get(-1));
+        assertThrows(IndexOutOfBoundsException.class, () -> tasks.get(1));
+        assertThrows(IndexOutOfBoundsException.class, () -> tasks.delete(1));
     }
 }
