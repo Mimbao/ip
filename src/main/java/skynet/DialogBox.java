@@ -47,6 +47,7 @@ public class DialogBox extends HBox {
             e.printStackTrace();
         }
 
+        this.setAlignment(Pos.BOTTOM_RIGHT);
         dialog.setText(text);
         dialog.setWrapText(true);
         dialog.setMinHeight(Label.USE_PREF_SIZE);
@@ -67,7 +68,7 @@ public class DialogBox extends HBox {
         ObservableList<Node> tmp = FXCollections.observableArrayList(this.getChildren());
         Collections.reverse(tmp);
         getChildren().setAll(tmp);
-        setAlignment(Pos.TOP_LEFT);
+        setAlignment(Pos.BOTTOM_LEFT);
         dialog.getStyleClass().add("reply-label");
     }
 
