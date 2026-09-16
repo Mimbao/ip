@@ -52,8 +52,18 @@ public class Skynet {
                 case "undo" -> handleUndo();
                 default -> {
                     commandType = "OtherCommand";
-                    throw new SkynetException("Hello, your command is unrecognized. "
-                            + "Use todo/deadline/event/list/mark/unmark/delete/find/undo/bye.");
+                    throw new SkynetException("Hello, your command is unrecognized. \n"
+                            + "Use the following commands: \n" +
+                            "- todo \n" +
+                            "- deadline \n" +
+                            "- event \n" +
+                            "- list \n" +
+                            "- mark \n" +
+                            "- unmark \n" +
+                            "- delete \n" +
+                            "- find \n" +
+                            "- undo \n" +
+                            "- bye \n");
                 }
             };
         } catch (SkynetException | IOException e) {
@@ -82,7 +92,7 @@ public class Skynet {
 
     private String handleBye() {
         commandType = "OtherCommand";
-        return "The Future, now. Chat Terminated.";
+        return "The Future is now. Chat Terminated.";
     }
 
     private String handleList() {
