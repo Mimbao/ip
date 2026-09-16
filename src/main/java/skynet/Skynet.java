@@ -53,17 +53,17 @@ public class Skynet {
                 default -> {
                     commandType = "OtherCommand";
                     throw new SkynetException("Hello, your command is unrecognized. \n"
-                            + "Use the following commands: \n" +
-                            "- todo \n" +
-                            "- deadline \n" +
-                            "- event \n" +
-                            "- list \n" +
-                            "- mark \n" +
-                            "- unmark \n" +
-                            "- delete \n" +
-                            "- find \n" +
-                            "- undo \n" +
-                            "- bye \n");
+                            + "Use the following commands: \n"
+                            + "- todo \n"
+                            + "- deadline \n"
+                            + "- event \n"
+                            + "- list \n"
+                            + "- mark \n"
+                            + "- unmark \n"
+                            + "- delete \n"
+                            + "- find \n"
+                            + "- undo \n"
+                            + "- bye \n");
                 }
             };
         } catch (SkynetException | IOException e) {
