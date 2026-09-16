@@ -2,6 +2,7 @@ package skynet;
 
 import java.util.Objects;
 
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
@@ -77,5 +78,10 @@ public class MainWindow extends AnchorPane {
                 DialogBox.getSkynetDialog(response, skynetImage, commandType)
         );
         userInput.clear();
+
+        if (input.equals("bye")) {
+            // Let the goodbye dialog be added before closing the JavaFX application.
+            Platform.runLater(Platform::exit);
+        }
     }
 }

@@ -330,11 +330,13 @@ public class Skynet {
         while (true) {
             String command = ui.readCommand();
             String response = skynet.getResponse(command);
-            ui.showError(response);
 
             if (command.equals("bye")) {
+                ui.showGoodbye();
                 break;
             }
+
+            ui.showError(response);
         }
     }
 }
