@@ -3,6 +3,8 @@ _Inspired by the 1984 Terminator film..._
 
 SkyNET is a chatbot for organizing to-dos, deadlines, and events.
 
+![SkyNET chatbot demo](Ui.png)
+
 ## Features
 
 | Command | Usage | Purpose |
